@@ -1,1 +1,1 @@
-#%%data_directory = './BCIs_S24/P300Data'subject = 3data_file = f"{data_directory}/s{subject}.mat"#%%import numpy as npfrom matplotlib import pyplot as pltimport BCIs_S24.loadmat
+#%%data_directory = './BCIs_S24/P300Data'subject = 3data_file = f"{data_directory}/s{subject}.mat"#%%import numpy as npfrom matplotlib import pyplot as pltimport BCIs_S24.loadmat as loadmatdata = loadmat.loadmat(data_file)train_data = data[f"s{subject}"]['train']
