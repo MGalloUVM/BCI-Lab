@@ -3,24 +3,41 @@
 Created on Wed Jan 17, 5:50pm 2024
 @author: magallo
 
-This module contains three functions:
-    load_training_eeg(subject, data_directory): Loads training data from filename calculated with the subject number and given data_directory.
-    plot_raw_eeg(subject, eeg_time, eeg_data, rowcol_id, is_target): Plots parameters on a 3x1 matplotlib display with subject being displayed in the title, eeg_time as the x-axis in each plot, and the remaining parameters (excluding subject) plotted on the y-axis for each graph.
-    load_and_plot_all(data_directory, subjects): Loads training data from filename calculated with the subject number and given data_directory.
+This module contains five functions:
+    load_training_eeg(subject, data_directory): Loads training data from filename 
+        calculated with the subject number and given data_directory.
+    plot_raw_eeg(subject, eeg_time, eeg_data, rowcol_id, is_target): Plots parameters 
+        on a 3x1 matplotlib display with subject being displayed in the title, eeg_time 
+        as the x-axis in each plot, and the remaining parameters (excluding subject) 
+        plotted on the y-axis for each graph.
+    load_and_plot_all(data_directory, subjects): Loads training data from filename 
+        calculated with the subject number and given data_directory.
+    analyze_subject(subject, data_directory): Analyzes given subject using the data 
+        directory path. Decodes the word spelled,
+        and returns the avg characters typed per minute.
+    analyze_all_rc_subjects(data_directory): Analyzes rc subjects 3-10 using the 
+        data directory path. Prints each decoded message along with its char-per-min
+        speed. Also prints the average # of chars typed per minute over all subjects,
+        along with the avg time to type a single character.
+    
 """
 #%%
 
 import numpy as np
 from matplotlib import pyplot as plt
-import BCIs_S24.loadmat as loadmat
+import loadmat as loadmat
 
 
 #%%
 def load_training_eeg(subject, data_directory):
-    """Loads training data from filename calculated with the subject number and given data_directory.
+    """
+    Loads training data from filename calculated with the subject number and 
+    given data_directory.
+    
     Args:
         subject (int): integer representing the subject number.
-        data_directory (string): string representing the file path from script directory execution to data files.
+        data_directory (string): string representing the file path from script
+            directory execution to data files.
     
     Returns:
         np.array: array containing the time marker for each datapoint.
@@ -44,7 +61,12 @@ def load_training_eeg(subject, data_directory):
 
 
 def plot_raw_eeg(subject, eeg_time, eeg_data, rowcol_id, is_target):
-    """Plots parameters on a 3x1 matplotlib display with subject being displayed in the title, eeg_time as the x-axis in each plot, and the remaining parameters (excluding subject) plotted on the y-axis for each graph.
+    """
+    Plots parameters on a 3x1 matplotlib display with subject being 
+    displayed in the title, eeg_time as the x-axis in each plot, and the 
+    remaining parameters (excluding subject) plotted on the y-axis for each 
+    graph.
+    
     Args:
         subject (int): integer representing the subject number.
         eeg_time (np.array): array containing the time marker for each datapoint.
@@ -108,3 +130,84 @@ def load_and_plot_all(data_directory, subjects):
         # Use our plotting function and our new variables to plot the variables
         plot_raw_eeg(subject, eeg_time, eeg_data, rowcol_id, is_target)
     
+
+#%%
+
+def analyze_subject(subject, data_directory):
+    """Analyzes given subject using the data directory path. Decodes the word spelled,
+        and returns the avg characters typed per minute.
+    Args:
+        subject (int): integer representing the subject number.
+        data_directory (string): string representing the file path from script directory execution to data files.
+    Returns:
+        double: Average number of characters typed per minute in given data."""
+    # Generate 6x6 2d list to reference with our data
+    character_matrix = [['A', 'B', 'C', 'D', 'E', 'F'],
+                        ['G', 'H', 'I', 'J', 'K', 'L'],
+                        ['M', 'N', 'O', 'P', 'Q', 'R'],
+                        ['S', 'T', 'U', 'V', 'W', 'X'],
+                        ['Y', 'Z', '0', '1', '2', '3'],
+                        ['4', '5', '6', '7', '8', '9']]  
+    # Load in relevant training variables
+    eeg_time, _, rowcol_id, is_target = load_training_eeg(subject, data_directory)
+    # Temp variable to store message as it develops
+    message = ""
+    # Initialize numpy arrays for counts
+    row_id_counts = np.zeros(6)
+    col_id_counts = np.zeros(6)
+    # Store number of times a correct row
+    flash_count = 0
+    
+    for index in range(len(rowcol_id)):
+        # Ensure no duplicate letters are recorded for the same flash
+        if is_target[index] == 1 and is_target[index - 1] != 1:
+            # Increment number of correct flashes
+            flash_count += 1
+    
+            # Count the rowcol_id
+            current_rowcol_id = rowcol_id[index]
+            if current_rowcol_id > 6:
+                row_id_counts[current_rowcol_id - 7] += 1
+            elif current_rowcol_id > 0:
+                col_id_counts[current_rowcol_id - 1] += 1
+    
+            # If each row and column has been flashed 15 times
+            if flash_count == 30:
+                # Get the flashed row/col indices
+                row_id = np.argmax(row_id_counts)
+                col_id = np.argmax(col_id_counts)
+                message += character_matrix[row_id][col_id]
+
+                # Reset row counts, flash count, start_time...
+                row_id_counts = np.zeros(6)
+                col_id_counts = np.zeros(6)
+                flash_count = 0
+    
+    # Print
+    print(f"Message: {message}")
+    # Calculate minutes passed in experiment
+    mins_in_experiment = (eeg_time[-1] - eeg_time[0]) / 60
+    chars_per_min = len(message) / mins_in_experiment
+    print(f"Characters-per-minute: {chars_per_min}\n")
+    return chars_per_min
+
+def analyze_all_rc_subjects(data_directory):
+    """Analyzes rc subjects 3-10 using the data directory path.
+        Prints each decoded message along with its char-per-min speed.
+        Also prints the average # of chars typed per minute over all subjects,
+        along with the avg time to type a single character.
+    Args:
+        subject (int): integer representing the subject number.
+        data_directory (string): string representing the file path from script directory execution to data files.
+    Returns:
+        None"""
+    # Store each avg type speed in the list below
+    avg_type_speed = []
+    for subject_num in range(3,11):
+        avg_type_speed.append(analyze_subject(subject_num, data_directory))
+    
+    # Calculate avg number of chars typed per min from all subjects
+    avg_chars_per_min = np.average(avg_type_speed)
+    # Print Results
+    print("Characters typed per minute: " + str(avg_chars_per_min))
+    print("Avg time to type one character: " + str(60/avg_chars_per_min))
