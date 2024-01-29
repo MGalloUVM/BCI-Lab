@@ -37,3 +37,62 @@ def get_events(rowcol_id, is_target):
     
     # Return the indices of event start and whether those events are target events
     return event_sample, is_target_event
+
+#%% Part 3 - Exploratory Data Analysis:
+    
+def num_samples_in_sec(eeg_time):
+    """
+    Used to find the number of samples per second of data.
+    
+    Args:
+        eeg_time (np.array): array of floats representing the time value in seconds at each index.
+    
+    Returns:
+        int: number of elements within 1s of data
+    """
+    first_time = eeg_time[0]
+    time_index = 1
+    while eeg_time[time_index] - first_time != 1:
+        print("time passed", eeg_time[time_index] - first_time)
+        time_index += 1
+    print(f"Number of elements within 1s of data: {time_index}")
+    return time_index
+
+#%% Part 3
+SAMPLES_PER_SECOND = 256
+NUM_CHANNELS = 8
+
+def epoch_data(eeg_time, eeg_data, event_sample, epoch_start_time=-0.5, epoch_end_time=1):
+    """
+    Loads our data into epoch blocks for further analysis.
+    
+    Args:
+        eeg_time (np.array): array of floats representing the time value in seconds at each index.
+        eeg_data (np.array <np.array>): 2d array with EEG values for each channel at every data point in the experiment data.
+        event_sample (np.array <int>): indices where every new event begins.
+        epoch_start_time <float>: start time offset from start point of each epoch, can be + or -
+        epoch_end_time <float>: end time offset from start point of each epoch, should be > epoch_start_time
+
+    Returns:
+        eeg_epochs (np.array <np.array...>): 3d array representing an epoch for each event in our data
+            - eeg_epochs[i][j][k], where i represents the i(th) epoch, 
+                                         j represents the j(th) sample in the epoch,
+                                         k represents the k(th) channel of data in the epoch.
+    """
+    # Calculate # of seconds in a single epoch
+    seconds_per_epoch = epoch_end_time - epoch_start_time
+    # Calculate # of samples in a single epoch
+    samples_per_epoch = int(SAMPLES_PER_SECOND * seconds_per_epoch)
+    
+    # Number of epochs...
+    num_epochs = len(event_sample)
+    
+    # Create a 3D array of zeros with correct shape
+    eeg_epochs = np.zeros([num_epochs, samples_per_epoch, NUM_CHANNELS])
+    
+    # UNIMPLEMENTED
+    print(eeg_epochs.shape)
+    
+    return eeg_epochs
+    
+    
