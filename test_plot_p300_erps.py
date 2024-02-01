@@ -17,12 +17,14 @@ import plot_p300_erps
 
 event_sample, is_target_event = plot_p300_erps.get_events(rowcol_id, is_target)
 
-# Method used to find number of samples per second of data
-def num_samples_in_sec(eeg_time):
-    first_time = eeg_time[0]
-    time_index = 1
-    while eeg_time[time_index] - first_time != 1:
-        print("time passed", eeg_time[time_index] - first_time)
-        time_index += 1
-    print(f"Number of elements within 1s of data: {time_index}")
-    return time_index
+#%% Part 3
+
+# Exploratory Data Analysis
+
+# Find out how many samples there are per second in the dataset
+# num_samples_in_sec(eeg_time)
+# Find out the number of channels in our eeg data...
+# print(eeg_data.shape)
+
+
+eeg_epochs = plot_p300_erps.epoch_data(eeg_time, eeg_data, event_sample)

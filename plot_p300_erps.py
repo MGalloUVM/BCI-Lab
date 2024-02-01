@@ -69,6 +69,8 @@ def epoch_data(eeg_time, eeg_data, event_sample, epoch_start_time=-0.5, epoch_en
     Args:
         eeg_time (np.array): array of floats representing the time value in seconds at each index.
         eeg_data (np.array <np.array>): 2d array with EEG values for each channel at every data point in the experiment data.
+            - NOTE: eeg_data[i][j], where i represents the i(th) channel
+                                          j represents the j(th) element
         event_sample (np.array <int>): indices where every new event begins.
         epoch_start_time <float>: start time offset from start point of each epoch, can be + or -
         epoch_end_time <float>: end time offset from start point of each epoch, should be > epoch_start_time
@@ -83,16 +85,28 @@ def epoch_data(eeg_time, eeg_data, event_sample, epoch_start_time=-0.5, epoch_en
     seconds_per_epoch = epoch_end_time - epoch_start_time
     # Calculate # of samples in a single epoch
     samples_per_epoch = int(SAMPLES_PER_SECOND * seconds_per_epoch)
-    
     # Number of epochs...
     num_epochs = len(event_sample)
     
     # Create a 3D array of zeros with correct shape
     eeg_epochs = np.zeros([num_epochs, samples_per_epoch, NUM_CHANNELS])
     
-    # UNIMPLEMENTED
-    print(eeg_epochs.shape)
+    # Get times at which each event starts...
+    event_start_times = eeg_time[event_sample]
     
+    # Enumerate through each event, creating an epoch with extracted data
+    for event_number, event_start_time in enumerate(event_start_times):
+        # Define the epoch window start and end times
+        window_start_time = event_start_time + epoch_start_time
+        window_end_time = event_start_time + epoch_end_time
+        
+        # Get indices within window...
+        window_indices = np.where((eeg_time > window_start_time) & (eeg_time <= window_end_time))[0]
+        # Get epoch data, transpose because (eeg_data[i][j])'s i represents channel, but we NEED i to represent the sample index, and j the channel
+        epoch_data = eeg_data[:, window_indices].T
+        # Set the epoch data
+        eeg_epochs[event_number, :, :] = epoch_data
+        
     return eeg_epochs
     
     
