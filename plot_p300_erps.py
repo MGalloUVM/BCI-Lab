@@ -85,7 +85,7 @@ def epoch_data(eeg_time, eeg_data, event_sample, epoch_start_time=-0.5, epoch_en
     # Calculate # of seconds in a single epoch
     seconds_per_epoch = epoch_end_time - epoch_start_time
     # Calculate # of samples in a single epoch
-    samples_per_epoch = int(SAMPLES_PER_SECOND * seconds_per_epoch)
+    samples_per_epoch = round(SAMPLES_PER_SECOND * seconds_per_epoch)
     # Number of epochs...
     num_epochs = len(event_sample)
     
@@ -102,7 +102,7 @@ def epoch_data(eeg_time, eeg_data, event_sample, epoch_start_time=-0.5, epoch_en
         window_end_time = event_start_time + epoch_end_time
         
         # Get indices within window...
-        window_indices = np.where((eeg_time >= window_start_time) & (eeg_time < window_end_time))[0]
+        window_indices = np.where((eeg_time > window_start_time) & (eeg_time <= window_end_time))[0]
         # Get epoch data, transpose because (eeg_data[i][j])'s i represents channel, but we NEED i to represent the sample index, and j the channel
         epoch_data = eeg_data[:, window_indices].T
         # Set the epoch data
