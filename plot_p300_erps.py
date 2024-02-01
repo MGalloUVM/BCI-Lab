@@ -80,6 +80,7 @@ def epoch_data(eeg_time, eeg_data, event_sample, epoch_start_time=-0.5, epoch_en
             - eeg_epochs[i][j][k], where i represents the i(th) epoch, 
                                          j represents the j(th) sample in the epoch,
                                          k represents the k(th) channel of data in the epoch.
+        erp_times (np.array <float>): 1d array of floats representing the time difference of each datapoint from the start of the epoch's event
     """
     # Calculate # of seconds in a single epoch
     seconds_per_epoch = epoch_end_time - epoch_start_time
@@ -101,12 +102,16 @@ def epoch_data(eeg_time, eeg_data, event_sample, epoch_start_time=-0.5, epoch_en
         window_end_time = event_start_time + epoch_end_time
         
         # Get indices within window...
-        window_indices = np.where((eeg_time > window_start_time) & (eeg_time <= window_end_time))[0]
+        window_indices = np.where((eeg_time >= window_start_time) & (eeg_time < window_end_time))[0]
         # Get epoch data, transpose because (eeg_data[i][j])'s i represents channel, but we NEED i to represent the sample index, and j the channel
         epoch_data = eeg_data[:, window_indices].T
         # Set the epoch data
         eeg_epochs[event_number, :, :] = epoch_data
-        
-    return eeg_epochs
+    
+    # Create erp_times array
+    time_step = 1 / SAMPLES_PER_SECOND
+    erp_times = np.arange(epoch_start_time, epoch_end_time, time_step)
+
+    return eeg_epochs, erp_times
     
     

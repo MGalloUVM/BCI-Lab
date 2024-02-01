@@ -27,4 +27,4 @@ event_sample, is_target_event = plot_p300_erps.get_events(rowcol_id, is_target)
 # print(eeg_data.shape)
 
 
-eeg_epochs = plot_p300_erps.epoch_data(eeg_time, eeg_data, event_sample)
+eeg_epochs, erp_times = plot_p300_erps.epoch_data(eeg_time, eeg_data, event_sample)
