@@ -124,19 +124,19 @@ def epoch_data(eeg_time, eeg_data, event_sample, epoch_start_time=-0.5, epoch_en
 
     return eeg_epochs, erp_times
 
-    
-    def get_erps(eeg_epochs, is_target_event):
+
+def get_erps(eeg_epochs, is_target_event):
     """
-        Extract the event-related potentials (ERPs) for target and non-target events.
+    Extract the event-related potentials (ERPs) for target and non-target events.
 
-        Args:
-            eeg_epochs (np.array): 3d array representing epochs for each event in our data
-            is_target_event (np.array <bool>): array indicating whether each event is a target event or not
+    Args:
+        eeg_epochs (np.array): 3d array representing epochs for each event in our data
+        is_target_event (np.array <bool>): array indicating whether each event is a target event or not
 
-        Returns:
-            np.array (np.array): ERPs for target events
-            np.array (np.array): ERPs for non-target events
-        """
+    Returns:
+        np.array[NUM_EPOCHS] <np.array[8]<float>>: ERPs for target events
+        np.array[NUM_EPOCHS] <np.array[8]<float>>: ERPs for non-target events
+    """
     # Select epochs corresponding to target events
     target_epochs = eeg_epochs[is_target_event]
     # Select epochs corresponding to non-target events
@@ -163,19 +163,38 @@ def plot_erps(target_erp, nontarget_erp, erp_times):
         None
     """
     # Create figure and subplots
-    fig, axes = plt.subplots(3, 3)
+    fig, axes = plt.subplots(3, 3, figsize=(10, 6))
+    axes = axes.flatten()
 
     # Iterate through the axes and plot target/non-target data
-    for i in range(3):
-        for j in range(3):
-            ax = axes[i, j]
-            ax.plot(erp_times, target_erp, 'b--', label='Target')
-            ax.plot(erp_times, nontarget_erp, 'r--', label='Non-target')
-            ax.legend(loc=1)
-            ax.set_title(f'Channel {i + j}')
-            ax.set_xlabel('Time from flash onset (s)')
-            ax.set_ylabel('Voltage (uV)')
-            ax.vlines(0, color='k', linestyles='dashed')
-            ax.hlines(0, color='k', linestyles='dashed')
+    for channel_number in range(NUM_CHANNELS):
+        # Plot target ERP for this channel
+        axes[channel_number].plot(erp_times, target_erp[:, channel_number], label='Target')
+        
+        # Plot nontarget ERP for this channel
+        axes[channel_number].plot(erp_times, nontarget_erp[:, channel_number], label='Non-target')
+        
+        # Set y range
+        axes[channel_number].set_ylim(-2, 2)
+        
+        # Add reference lines at x=0 and y=0
+        axes[channel_number].axhline(0, color='black', linestyle='dotted')
+        axes[channel_number].axvline(0, color='black', linestyle='dotted')
+        
+        # Set title to the channel name
+        axes[channel_number].set_title(f"Channel {channel_number}")
+        
+        # Label axes
+        axes[channel_number].set_xlabel('time from flash onset (s)')
+        axes[channel_number].set_ylabel('Voltage (µV)')
+        
+        # Add legend
+        if channel_number == NUM_CHANNELS - 1:
+            axes[channel_number].legend()
+        
+    # Hide last unused plot...
+    for unused_axes_index in range(NUM_CHANNELS, len(axes)):
+        axes[unused_axes_index].axis('off')
+    
     plt.tight_layout()
     plt.show()
