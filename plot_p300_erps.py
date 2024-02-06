@@ -1,11 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jan 25 13:12:14 2024
+Provides functions for loading and extracting P300 data, plotting the resulting data for multiple subjects,
+and printing participants spelling and word count.
 
+Functions contain utility for extracting and slicing data from a data file, creating subplots with shared x axes,
+looping through and plotting multiple instances, and predicting desired letters based on an RC speller.
+
+@author: Aiden Pricer-Coan
 @author: mike
+
+file: plot_p300_erps.py
+BME 6710 - Jangraw
+Lab Two: Event-Related Potentials
 """
 
+# Import statements
 #%% Part 1
 import numpy as np
 import matplotlib.pyplot as plt
@@ -113,5 +123,59 @@ def epoch_data(eeg_time, eeg_data, event_sample, epoch_start_time=-0.5, epoch_en
     erp_times = np.arange(epoch_start_time, epoch_end_time, time_step)
 
     return eeg_epochs, erp_times
+
     
-    
+    def get_erps(eeg_epochs, is_target_event):
+    """
+        Extract the event-related potentials (ERPs) for target and non-target events.
+
+        Args:
+            eeg_epochs (np.array): 3d array representing epochs for each event in our data
+            is_target_event (np.array <bool>): array indicating whether each event is a target event or not
+
+        Returns:
+            np.array (np.array): ERPs for target events
+            np.array (np.array): ERPs for non-target events
+        """
+    # Select epochs corresponding to target events
+    target_epochs = eeg_epochs[is_target_event]
+    # Select epochs corresponding to non-target events
+    nontarget_epochs = eeg_epochs[~is_target_event]
+
+    # Calculate mean response on each channel for target events
+    target_erp = np.mean(target_epochs, axis=0)
+    # Calculate mean response on each channel for non-target events
+    nontarget_erp = np.mean(nontarget_epochs, axis=0)
+
+    return target_erp, nontarget_erp
+
+
+def plot_erps(target_erp, nontarget_erp, erp_times):
+    """
+    Plots event-related potentials (ERPs) for target and non-target events.
+
+    Args:
+        target_erp (np.array): Array containing the mean response on each channel for target events.
+        nontarget_erp (np.array): Array containing the mean response on each channel for non-target events.
+        erp_times (np.array): Array representing the time difference of each datapoint from the start of the event.
+
+    Returns:
+        None
+    """
+    # Create figure and subplots
+    fig, axes = plt.subplots(3, 3)
+
+    # Iterate through the axes and plot target/non-target data
+    for i in range(3):
+        for j in range(3):
+            ax = axes[i, j]
+            ax.plot(erp_times, target_erp, 'b--', label='Target')
+            ax.plot(erp_times, nontarget_erp, 'r--', label='Non-target')
+            ax.legend(loc=1)
+            ax.set_title(f'Channel {i + j}')
+            ax.set_xlabel('Time from flash onset (s)')
+            ax.set_ylabel('Voltage (uV)')
+            ax.vlines(0, color='k', linestyles='dashed')
+            ax.hlines(0, color='k', linestyles='dashed')
+    plt.tight_layout()
+    plt.show()
