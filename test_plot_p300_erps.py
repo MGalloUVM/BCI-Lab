@@ -45,3 +45,24 @@ target_erp, nontarget_erp = plot_p300_erps.get_erps(eeg_epochs, is_target_event)
 
 # Plot ERPs of the subject
 plot_p300_erps.plot_erps(target_erp, nontarget_erp, erp_times)
+
+'''
+The repeated up-and-down pattern on many of the channels is likely from EPSPs and IPSPs occurring in the 
+postsynaptic membrane of the individual. The larger peaks are likely action potentials firing and then resulting 
+hyperpolarization valleys. 
+
+Different brain regions are responsible for processing different cognitive functions and depending on the placement 
+of the electrodes certain channels will capture stronger and more distinct voltage patterns. Channels related to 
+areas involved in attention, memory, and vision may have more pronounced voltage patterns. 
+
+The voltage on some of the channels has a positive peak around half a second after a target flash due to the p300 
+wave component of an ERP. The p300 deflection usually occurs between 250 and 500 milliseconds after a stimulus, 
+like a target flash, and usually relates to decision making when responding to an unexpected or rare event. 
+
+I believe that channels such as Pz (Parietal midline) and Cz (Central midline) would be the channels previously 
+described. This is due to the fact that P300 waves are usually observed in the parietal and central regions of the 
+head. There may also be activity in other channels covering these areas such as FCz and CPz. 
+
+Observing multiple subjects helped differentiate between artifacts and important patterns that occurred almost every 
+time in relation to the stimulus.
+'''
