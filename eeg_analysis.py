@@ -4,6 +4,8 @@ Created on Wed Jan 17, 5:50pm 2024
 
 FINISH WHEN FILE IS COMPLETE?
 """
+from matplotlib import pyplot as plt
+import numpy as np
 import load_p300_data
 import plot_p300_erps
 
@@ -14,15 +16,15 @@ def prepare_epoch_data(subject_number, data_directory='./P300Data/'):
           Also calculates mean target/non-target epoch data.
 
         Parameters:
-        - subject_number <int> : Subject ID as named on file
-        - data_directory <str> : Path to directory where the EEG data files are located.
+         - subject_number <int> : Subject ID as named on file
+         - data_directory <str> : Path to directory where the EEG data files are located.
 
         Returns:
-        - target_erp <np.array>[NUM_EPOCHS, NUM_CHANNELS] : ERPs for target events
-        - nontarget_erp <np.array>[NUM_EPOCHS, NUM_CHANNELS] : ERPs for non-target events
-        - erp_times <np.ndarray>[EPOCH_LENGTH] : time points relative to flashing onset.
-        - target_epochs <numpy.ndarray>[NUM_TARGET_EPOCHS] : individual epochs for target trials.
-        - nontarget_epochs: <numpy.ndarray>[NUM_NONTARGET_EPOCHS] : individual epochs for non-target trials.
+         - target_erp <np.array>[SAMPLES_PER_EPOCH, NUM_CHANNELS] : ERPs for target events
+         - nontarget_erp <np.array>[SAMPLES_PER_EPOCH, NUM_CHANNELS] : ERPs for non-target events
+         - erp_times <np.ndarray>[SAMPLES_PER_EPOCH] : time points relative to flashing onset.
+         - target_epochs <numpy.ndarray>[NUM_TARGET_EPOCHS, SAMPLES_PER_EPOCH, NUM_CHANNELS] : List of epochs where target letter is included in row/column.
+         - nontarget_epochs: <numpy.ndarray>[NUM_NONTARGET_EPOCHS, SAMPLES_PER_EPOCH, NUM_CHANNELS] : List of epochs where target letter is NOT included in row/column.
     """
     # Load eeg experiment results into corresponding arrays
     #   - See function definition for types/dimensions
@@ -48,18 +50,18 @@ def prepare_epoch_data(subject_number, data_directory='./P300Data/'):
 
 
 #%% Part B
-def calculate_SE_Mean(epochs):
+def calculate_se_mean(epochs):
     """
-    Calculate Standard Error of the Mean (SEM) for given data.
-
-    Parameters:
-    - data <np.array> : 2D array where rows are trials and columns are the time points time points.
-
-    Returns:
-    - sem <np.array> : SEM values for each time point across trials.
-    """
-    import numpy as np
+        Calculate Standard Error of the Mean (SEM) for given data.
     
+        Parameters:
+         - epochs <np.array>[NUM_EPOCHS, SAMPLES_PER_EPOCH, NUM_CHANNELS]: 3d array representing an epoch for each event in our data.
+             ~ epochs[i][j][k], where i represents the i(th) epoch, 
+                                     j represents the j(th) sample in the epoch,
+                                     k represents the k(th) channel of data in the epoch.
+        Returns:
+        - se_mean <np.array>[] : SEM values for each time point across trials.
+    """    
     # Use numpy to calculate standard deviation for each time point
     std = np.std(epochs, axis=0)
     
@@ -74,25 +76,23 @@ def calculate_SE_Mean(epochs):
 
 def plot_confidence_intervals(target_erp, nontarget_erp, erp_times, target_epochs, nontarget_epochs):
     """
-        plot_confidence_intervals plots the ERPs on each channel for target and nontarget events.
-         Plots confidence intervals as error bars around these ERPs. Also, shows error range for the
-         ERPs.
+        Plots the ERPs on each channel for target and nontarget events.
+        Plots confidence intervals as error bars around these ERPs.
+        Shows error range for the ERPs.
          
-         Params:
-             - target_erp <np.array>[NUM_EPOCHS, NUM_CHANNELS] : ERPs for target events
-             - nontarget_erp <np.array>[NUM_EPOCHS, NUM_CHANNELS] : ERPs for non-target events
-             - erp_times <np.ndarray>[EPOCH_LENGTH] : time points relative to flashing onset.
-             - target_epochs <numpy.ndarray>[NUM_TARGET_EPOCHS] : individual epochs for target trials.
-             - nontarget_epochs: <numpy.ndarray>[NUM_NONTARGET_EPOCHS] : individual epochs for non-target trials.
+        Params:
+         - target_erp <np.array>[SAMPLES_PER_EPOCH, NUM_CHANNELS] : ERPs for target events
+         - nontarget_erp <np.array>[SAMPLES_PER_EPOCH, NUM_CHANNELS] : ERPs for non-target events
+         - erp_times <np.ndarray>[SAMPLES_PER_EPOCH] : time points relative to flashing onset.
+         - target_epochs <numpy.ndarray>[NUM_TARGET_EPOCHS, SAMPLES_PER_EPOCH, NUM_CHANNELS] : List of epochs where target letter is included in row/column.
+         - nontarget_epochs: <numpy.ndarray>[NUM_NONTARGET_EPOCHS, SAMPLES_PER_EPOCH, NUM_CHANNELS] : List of epochs where target letter is NOT included in row/column.
              
-         Returns: None
-    """
-    # Imports
-    from matplotlib import pyplot as plt
-    
+        Returns:
+         - None
+    """    
     # Calculate se_mean for both target and nontarget ERPs
-    target_se_mean = calculate_SE_Mean(target_epochs)
-    nontarget_se_mean = calculate_SE_Mean(nontarget_epochs)
+    target_se_mean = calculate_se_mean(target_epochs)
+    nontarget_se_mean = calculate_se_mean(nontarget_epochs)
     
     # Determine the number of channels from the shape of the data
     num_channels = target_erp.shape[1]

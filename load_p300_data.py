@@ -31,19 +31,21 @@ import loadmat as loadmat
 #%%
 def load_training_eeg(subject, data_directory):
     """
-    Loads training data from filename calculated with the subject number and 
-    given data_directory.
-    
-    Args:
-        subject (int): integer representing the subject number.
-        data_directory (string): string representing the file path from script
-            directory execution to data files.
-    
-    Returns:
-        np.array: array containing the time marker for each datapoint.
-        np.array: array containing a list of multiple eeg inputs for each datapoint.
-        np.array <int>: array of integers representing the flashed row/column identifier being flashed for each datapoint.
-        np.array <bool>: array of booleans representing whether or not the flashed row/column contains the target letter for each datapoint""" 
+        Loads training data from filename calculated with the subject number and 
+        given data_directory.
+        
+        Args:
+            subject <int> : integer representing the subject number.
+            data_directory <string> : string representing the file path from script
+                directory execution to data files.
+        
+        Returns:
+         - subject <int> : integer representing the subject number.
+         - eeg_time <np.array (float)>[TOTAL_SAMPLES] : array containing the time marker for each datapoint.
+         - eeg_data <np.array (float)>[TOTAL_SAMPLES, NUM_CHANNELS] : array containing a list of multiple eeg inputs for each datapoint.
+         - rowcol_id <np.array (int)>[TOTAL_SAMPLES] : array of integers representing the flashed row/column identifier being flashed for each datapoint.
+         - is_target <np.array (bool)>[TOTAL_SAMPLES] : array of booleans representing whether or not the flashed row/column contains the target letter for each datapoint
+    """
     # Load data, extract training data
     data_file = f"{data_directory}/s{subject}.mat"
     data = loadmat.loadmat(data_file)
@@ -62,17 +64,18 @@ def load_training_eeg(subject, data_directory):
 
 def plot_raw_eeg(subject, eeg_time, eeg_data, rowcol_id, is_target):
     """
-    Plots parameters on a 3x1 matplotlib display with subject being 
-    displayed in the title, eeg_time as the x-axis in each plot, and the 
-    remaining parameters (excluding subject) plotted on the y-axis for each 
-    graph.
-    
-    Args:
-        subject (int): integer representing the subject number.
-        eeg_time (np.array): array containing the time marker for each datapoint.
-        eeg_data (np.array): array containing a list of multiple eeg inputs for each datapoint.
-        rowcol_id (np.array <int>): array of integers representing the flashed row/column identifier being flashed for each datapoint.
-        is_target (np.array <bool>): array of booleans representing whether or not the flashed row/column contains the target letter for each datapoint""" 
+        Plots parameters on a 3x1 matplotlib display with subject being 
+        displayed in the title, eeg_time as the x-axis in each plot, and the 
+        remaining parameters (excluding subject) plotted on the y-axis for each 
+        graph.
+        
+        Args:
+         - subject <int> : integer representing the subject number.
+         - eeg_time <np.array (float)>[TOTAL_SAMPLES] : array containing the time marker for each datapoint.
+         - eeg_data <np.array (float)>[TOTAL_SAMPLES, NUM_CHANNELS] : array containing a list of multiple eeg inputs for each datapoint.
+         - rowcol_id <np.array (int)>[TOTAL_SAMPLES] : array of integers representing the flashed row/column identifier being flashed for each datapoint.
+         - is_target <np.array (bool)>[TOTAL_SAMPLES] : array of booleans representing whether or not the flashed row/column contains the target letter for each datapoint
+    """ 
     fig, axs = plt.subplots(3, 1, sharex=True)
     fig.suptitle(f"P300 Speller subject {subject} Raw Data")
     
@@ -117,16 +120,20 @@ def plot_raw_eeg(subject, eeg_time, eeg_data, rowcol_id, is_target):
 #%%
 
 def load_and_plot_all(data_directory, subjects):
-    """Loads training data from filename calculated with the subject number and given data_directory.
-    Args:
-        data_directory (string): string representing the file path from script directory execution to data files.
-        subject (List <int>): integer representing the subject number.
-    Returns:
-        None"""
+    """
+        Loads training data from filename calculated with the subject number and given data_directory.
+        
+        Args:
+         - data_directory <string>: string representing the file path from script directory execution to data files.
+         - subjects <int[]> : List ofinteger representing the subject number.
+         
+        Returns:
+         - None
+    """
     # Iterate through each subject
-    for subject in subjects:
+    for subject_number in subjects:
         # Load training data into variables from passing our subject and data directory into load_training_eeg()
-        eeg_time, eeg_data, rowcol_id, is_target = load_training_eeg(subject, data_directory)
+        eeg_time, eeg_data, rowcol_id, is_target = load_training_eeg(subject_number, data_directory)
         # Use our plotting function and our new variables to plot the variables
         plot_raw_eeg(subject, eeg_time, eeg_data, rowcol_id, is_target)
     
@@ -134,13 +141,17 @@ def load_and_plot_all(data_directory, subjects):
 #%%
 
 def analyze_subject(subject, data_directory):
-    """Analyzes given subject using the data directory path. Decodes the word spelled,
-        and returns the avg characters typed per minute.
-    Args:
-        subject (int): integer representing the subject number.
-        data_directory (string): string representing the file path from script directory execution to data files.
-    Returns:
-        double: Average number of characters typed per minute in given data."""
+    """
+        Analyzes given subject using the data directory path. Decodes the word spelled,
+          and returns the avg characters typed per minute.
+        
+        Args:
+         - subject <int> : integer representing the subject number.
+         - data_directory <string> : string representing the file path from script directory execution to data files.
+        
+        Returns:
+         - chars_per_min <double> : Average number of characters typed per minute in given data.
+    """
     # Generate 6x6 2d list to reference with our data
     character_matrix = [['A', 'B', 'C', 'D', 'E', 'F'],
                         ['G', 'H', 'I', 'J', 'K', 'L'],
@@ -192,15 +203,18 @@ def analyze_subject(subject, data_directory):
     return chars_per_min
 
 def analyze_all_rc_subjects(data_directory):
-    """Analyzes rc subjects 3-10 using the data directory path.
+    """
+        Analyzes rc subjects 3-10 using the data directory path.
         Prints each decoded message along with its char-per-min speed.
         Also prints the average # of chars typed per minute over all subjects,
         along with the avg time to type a single character.
-    Args:
-        subject (int): integer representing the subject number.
-        data_directory (string): string representing the file path from script directory execution to data files.
-    Returns:
-        None"""
+        
+        Args:
+         - data_directory <string> : string representing the file path from script directory execution to data files.
+    
+        Returns:
+         - None
+    """
     # Store each avg type speed in the list below
     avg_type_speed = []
     for subject_num in range(3,11):

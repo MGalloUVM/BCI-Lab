@@ -36,16 +36,16 @@ import matplotlib.pyplot as plt
 
 def get_events(rowcol_id, is_target):
     """
-    Loads training data from filename calculated with the subject number and 
-    given data_directory.
-    
-    Args:
-        rowcol_id <np.array (int)>[TOTAL_SAMPLES]: array of integers representing the flashed row/column identifier being flashed for each datapoint.
-        is_target <np.array (bool)>[TOTAL_SAMPLES]: array of booleans representing whether or not the flashed row/column contains the target letter for each datapoint
-    
-    Returns:
-        event_sample <np.array (int)>[TOTAL_SAMPLES]: indices where every new event begins.
-        is_target_event <np.array (bool)>[TOTAL_SAMPLES]: array where each element indicates whether an event was a target event or not.
+        Loads training data from filename calculated with the subject number and 
+        given data_directory.
+        
+        Args:
+         - rowcol_id <np.array (int)>[TOTAL_SAMPLES] : array of integers representing the flashed row/column identifier being flashed for each datapoint.
+         - is_target <np.array (bool)>[TOTAL_SAMPLES] : array of booleans representing whether or not the flashed row/column contains the target letter for each datapoint
+        
+        Returns:
+         - event_sample <np.array (int)>[TOTAL_SAMPLES] : indices where every new event begins.
+         - is_target_event <np.array (bool)>[TOTAL_SAMPLES] : array where each element indicates whether an event was a target event or not.
     """
     # Calculate the difference between rowcol_id vals
     diff_rowcol_id = np.diff(rowcol_id)
@@ -64,13 +64,13 @@ def get_events(rowcol_id, is_target):
     
 def num_samples_in_sec(eeg_time):
     """
-    Used to find the number of samples per second of data.
-    
-    Args:
-        eeg_time <np.array (float)>: array of floats representing the time value in seconds at each index.
-    
-    Returns:
-        time_index <int>: number of elements within 1s of data
+        Used to find the number of samples per second of data.
+        
+        Args:
+         - eeg_time <np.array (float)>[TOTAL_SAMPLES] : array of floats representing the time value in seconds at each index.
+        
+        Returns:
+         - time_index <int> : number of elements within 1s of data
     """
     first_time = eeg_time[0]
     time_index = 1
@@ -88,23 +88,23 @@ NUM_CHANNELS = 8
 
 def epoch_data(eeg_time, eeg_data, event_sample, epoch_start_time=-0.5, epoch_end_time=1):
     """
-    Loads our data into epoch blocks for further analysis.
+        Loads our data into epoch blocks for further analysis.
+        
+        Args:
+         - eeg_time <np.array>[TOTAL_SAMPLES] : Array of floats representing the time value in seconds at each index.
+         - eeg_data <np.array>[TOTAL_SAMPLES, NUM_CHANNELS] : 2d array with EEG values for each channel at every data point in the experiment data.
+             - NOTE: eeg_data[i, j], where i represents the i(th) channel
+                                           j represents the j(th) element
+         - event_sample <np.array>[NUM_EPOCHS] : Integer indices where every new event begins.
+         - epoch_start_time <float> : start time offset from start point of each epoch, can be + or -
+         - epoch_end_time <float> : end time offset from start point of each epoch, should be > epoch_start_time
     
-    Args:
-        eeg_time <np.array>[TOTAL_SAMPLES] : array of floats representing the time value in seconds at each index.
-        eeg_data <np.array>[TOTAL_SAMPLES, NUM_CHANNELS] : 2d array with EEG values for each channel at every data point in the experiment data.
-            - NOTE: eeg_data[i, j], where i represents the i(th) channel
-                                          j represents the j(th) element
-        event_sample <np.array (int)>[NUM_EPOCHS] : indices where every new event begins.
-        epoch_start_time <float> : start time offset from start point of each epoch, can be + or -
-        epoch_end_time <float> : end time offset from start point of each epoch, should be > epoch_start_time
-
-    Returns:
-        eeg_epochs <np.array>[NUM_EPOCHS, TOTAL_SAMPLES, NUM_CHANNELS]: 3d array representing an epoch for each event in our data
-            - eeg_epochs[i][j][k], where i represents the i(th) epoch, 
-                                         j represents the j(th) sample in the epoch,
-                                         k represents the k(th) channel of data in the epoch.
-        erp_times (np.array <float>): 1d array of floats representing the time difference of each datapoint from the start of the epoch's event
+        Returns:
+         - eeg_epochs <np.array>[NUM_EPOCHS, SAMPLES_PER_EPOCH, NUM_CHANNELS]: 3d array representing an epoch for each event in our data
+             - eeg_epochs[i][j][k], where i represents the i(th) epoch, 
+                                          j represents the j(th) sample in the epoch,
+                                          k represents the k(th) channel of data in the epoch.
+         - erp_times <np.array>[SAMPLES_PER_EPOCH]: 1d array of floats representing the time difference of each datapoint from the start of the epoch's event
     """
     # Calculate # of seconds in a single epoch
     seconds_per_epoch = epoch_end_time - epoch_start_time
@@ -142,15 +142,18 @@ def epoch_data(eeg_time, eeg_data, event_sample, epoch_start_time=-0.5, epoch_en
 
 def get_erps(eeg_epochs, is_target_event):
     """
-    Extract the event-related potentials (ERPs) for target and non-target events.
-
-    Args:
-        eeg_epochs (np.array): 3d array representing epochs for each event in our data
-        is_target_event (np.array <bool>): array indicating whether each event is a target event or not
-
-    Returns:
-        np.array[NUM_EPOCHS] <np.array (float)>[NUM_CHANNELS] : ERPs for target events
-        np.array[NUM_EPOCHS] <np.array (float)>[NUM_CHANNELS] : ERPs for non-target events
+        Extract the event-related potentials (ERPs) for target and non-target events.
+    
+        Args:
+         - eeg_epochs <np.array>[NUM_EPOCHS, SAMPLES_PER_EPOCH, NUM_CHANNELS]: 3d array representing an epoch for each event in our data
+             ~ eeg_epochs[i][j][k], where i represents the i(th) epoch, 
+                                          j represents the j(th) sample in the epoch,
+                                          k represents the k(th) channel of data in the epoch.
+         - is_target_event <np.array (bool)>[NUM_EPOCHS]: Array of booleans indicating whether each event is a target event or not
+        
+        Returns:
+         - target_erp <np.array>[NUM_EPOCHS, SAMPLES_PER_EPOCH, NUM_CHANNELS] : ERP floats for target events
+         - nontarget_erp <np.array>[NUM_EPOCHS, SAMPLES_PER_EPOCH, NUM_CHANNELS] : ERP floats for non-target events
     """
     # Select epochs corresponding to target events
     target_epochs = eeg_epochs[is_target_event]
@@ -168,15 +171,15 @@ def get_erps(eeg_epochs, is_target_event):
 
 def plot_erps(target_erp, nontarget_erp, erp_times):
     """
-    Plots event-related potentials (ERPs) for target and non-target events.
-
-    Args:
-        target_erp (np.array)[NUM_EPOCHS]: Array containing the mean response on each channel for target events.
-        nontarget_erp (np.array)[NUM_EPOCHS]: Array containing the mean response on each channel for non-target events.
-        erp_times (np.array)[NUM_EPOCHS]: Array representing the time difference of each datapoint from the start of the event.
-
-    Returns:
-        None
+        Plots event-related potentials (ERPs) for target and non-target events.
+    
+        Args:
+         - target_erp <np.array>[NUM_EPOCHS, SAMPLES_PER_EPOCH, NUM_CHANNELS] : Array containing the mean response on each channel for target events.
+         - nontarget_erp <np.array>[NUM_EPOCHS, SAMPLES_PER_EPOCH, NUM_CHANNELS] : Array containing the mean response on each channel for non-target events.
+         - erp_times (np.array)[SAMPLES_PER_EPOCH]: Array representing the time difference of each datapoint from the start of the event.
+    
+        Returns:
+         - None
     """
     # Create figure and subplots
     fig, axes = plt.subplots(3, 3, figsize=(10, 6))
