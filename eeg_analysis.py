@@ -10,6 +10,8 @@ import load_p300_data
 import plot_p300_erps
 
 #%% Part A
+
+
 def prepare_epoch_data(subject_number, data_directory='./P300Data/'):
     """
         Prepare EEG data by splitting it into target and non-target epochs.
@@ -50,6 +52,8 @@ def prepare_epoch_data(subject_number, data_directory='./P300Data/'):
 
 
 #%% Part B
+
+
 def calculate_se_mean(epochs):
     """
         Calculate Standard Error of the Mean (SEM) for given data.
@@ -73,6 +77,7 @@ def calculate_se_mean(epochs):
     
     # Return standard error of the epochs
     return se_mean
+
 
 def plot_confidence_intervals(target_erp, nontarget_erp, erp_times, target_epochs, nontarget_epochs):
     """
@@ -132,3 +137,50 @@ def plot_confidence_intervals(target_erp, nontarget_erp, erp_times, target_epoch
     # Show plot in a tight layout
     plt.tight_layout()
     plt.show()
+
+
+#%% Part C
+
+
+def bootstrap_p_values(target_epochs, nontarget_epochs, num_iterations=3000):
+    """
+        Calculate p-values for each time point and channel using bootstrapping.
+    
+        Parameters:
+         - target_epochs: np.array, shape (NUM_TARGET_EPOCHS, SAMPLES_PER_EPOCH, NUM_CHANNELS)
+         - nontarget_epochs: np.array, shape (NUM_NONTARGET_EPOCHS, SAMPLES_PER_EPOCH, NUM_CHANNELS)
+         - num_iterations: int, number of bootstrapping iterations
+    
+        Returns:
+         - p_values: np.array, shape (SAMPLES_PER_EPOCH, NUM_CHANNELS), p-values for each time point and channel
+    """
+    # Combine target and nontarget epochs
+    combined_epochs = np.concatenate((target_epochs, nontarget_epochs), axis=0)
+    
+    # Calculate the observed difference between target and nontarget means
+    observed_diff = np.mean(target_epochs, axis=0) - np.mean(nontarget_epochs, axis=0)
+    
+    # Initialize an array to hold the bootstrap differences
+    bootstrap_diffs = np.zeros((num_iterations, *observed_diff.shape))
+    
+    num_targets = target_epochs.shape[0]
+    num_nontargets = nontarget_epochs.shape[0]
+    
+    for i in range(num_iterations):
+        # Resample with replacement to create new target and nontarget groups
+        bootstrap_sample = np.random.choice(range(combined_epochs.shape[0]), size=combined_epochs.shape[0], replace=True)
+        bootstrap_targets = combined_epochs[bootstrap_sample[:num_targets]]
+        bootstrap_nontargets = combined_epochs[bootstrap_sample[num_targets:num_targets+num_nontargets]]
+        
+        # Calculate difference between bootstrapped target and nontarget means
+        bootstrap_diffs[i] = np.mean(bootstrap_targets, axis=0) - np.mean(bootstrap_nontargets, axis=0)
+    
+    # Calculate p-values: proportion of bootstrap differences as extreme as the observed difference
+    p_values = np.mean(np.abs(bootstrap_diffs) >= np.abs(observed_diff[None, :, :]), axis=0)
+    
+    return p_values
+
+
+#%% Part D
+
+
