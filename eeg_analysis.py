@@ -98,10 +98,9 @@ def plot_confidence_intervals(target_erp, nontarget_erp, erp_times, target_epoch
     num_channels = target_erp.shape[1]
     
     # Define the layout of the subplots. Adusts the number of rows based on the number of channels
-    cols = 2
+    cols = 3
     rows = num_channels // cols + (num_channels % cols > 0)
     
-    # Adjust the figure size as needed
     plt.figure(figsize=(10, rows * 3))
     
     # Iterates through all channels
@@ -109,26 +108,26 @@ def plot_confidence_intervals(target_erp, nontarget_erp, erp_times, target_epoch
         # Create a subplot of all the channels for the current subject
         plt.subplot(rows, cols, channel_index + 1)
         
-        # Selecting data for the current channel
         # Pulls target_erp, nontarget_erp, target_se_mean, and nontarget_se_mean for each channel
-        # Grabs data up to teh current channel index for each variable
         target_erp_channel = target_erp[:, channel_index]
         nontarget_erp_channel = nontarget_erp[:, channel_index]
         target_se_mean_channel = target_se_mean[:, channel_index]
         nontarget_se_mean_channel = nontarget_se_mean[:, channel_index]
         
-        # Plotting ERPs for the current channel
-        # Use fill_between to display the confidence interval
-        plt.plot(erp_times, target_erp_channel, label='Target ERP')
-        plt.fill_between(erp_times, target_erp_channel - 2 * target_se_mean_channel, target_erp_channel + 2 * target_se_mean_channel, alpha=0.2)
-        
+        # Plot target/nontarget ERPs for the current channel
+        plt.plot(erp_times, target_erp_channel, label='Target ERP')        
         plt.plot(erp_times, nontarget_erp_channel, label='Non-Target ERP')
-        plt.fill_between(erp_times, nontarget_erp_channel - 2 * nontarget_se_mean_channel, nontarget_erp_channel + 2 * nontarget_se_mean_channel, alpha=0.2)
+        
+        # Fill in 95% confidence interval by adding/subtracting 2*SEM to/from mean ERP.
+        plt.fill_between(erp_times, target_erp_channel - 2 * target_se_mean_channel, target_erp_channel + 2 * target_se_mean_channel, alpha=0.2, label='Target +/- 95% CI')
+        plt.fill_between(erp_times, nontarget_erp_channel - 2 * nontarget_se_mean_channel, nontarget_erp_channel + 2 * nontarget_se_mean_channel, alpha=0.2, label='Non-Target +/- 95% CI')
         
         plt.xlabel('Time (ms)') # X axis label
         plt.ylabel('Amplitude (µV)') # Y axis label
-        plt.title(f'Channel {channel_index + 1}') # Title
-        plt.legend()
+        plt.title(f'Channel {channel_index}') # Title
+        
+        if (channel_index == num_channels - 1):
+            plt.legend()
     
     # Show plot in a tight layout
     plt.tight_layout()
