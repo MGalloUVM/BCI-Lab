@@ -135,7 +135,7 @@ def load_and_plot_all(data_directory, subjects):
         # Load training data into variables from passing our subject and data directory into load_training_eeg()
         eeg_time, eeg_data, rowcol_id, is_target = load_training_eeg(subject_number, data_directory)
         # Use our plotting function and our new variables to plot the variables
-        plot_raw_eeg(subject, eeg_time, eeg_data, rowcol_id, is_target)
+        plot_raw_eeg(subject_number, eeg_time, eeg_data, rowcol_id, is_target)
     
 
 #%%

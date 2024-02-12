@@ -154,29 +154,32 @@ def bootstrap_p_values(target_epochs, nontarget_epochs, num_iterations=3000):
         Returns:
          - p_values: np.array, shape (SAMPLES_PER_EPOCH, NUM_CHANNELS), p-values for each time point and channel
     """
-    # Combine target and nontarget epochs
+    # Combine target and non-target epochs for resampling under the null hypothesis
     combined_epochs = np.concatenate((target_epochs, nontarget_epochs), axis=0)
     
-    # Calculate the observed difference between target and nontarget means
+    # Difference between target and non-target means, for later use
     observed_diff = np.mean(target_epochs, axis=0) - np.mean(nontarget_epochs, axis=0)
     
     # Initialize an array to hold the bootstrap differences
-    bootstrap_diffs = np.zeros((num_iterations, *observed_diff.shape))
+    bootstrap_diffs = np.zeros((num_iterations, observed_diff.shape[0], observed_diff.shape[1]))
     
-    num_targets = target_epochs.shape[0]
-    num_nontargets = nontarget_epochs.shape[0]
+    # Total number of epochs for resampling
+    num_epochs = combined_epochs.shape[0]
     
     for i in range(num_iterations):
-        # Resample with replacement to create new target and nontarget groups
-        bootstrap_sample = np.random.choice(range(combined_epochs.shape[0]), size=combined_epochs.shape[0], replace=True)
-        bootstrap_targets = combined_epochs[bootstrap_sample[:num_targets]]
-        bootstrap_nontargets = combined_epochs[bootstrap_sample[num_targets:num_targets+num_nontargets]]
-        
-        # Calculate difference between bootstrapped target and nontarget means
-        bootstrap_diffs[i] = np.mean(bootstrap_targets, axis=0) - np.mean(bootstrap_nontargets, axis=0)
+        # Sample with replacement from the combined set of epochs
+        bootstrap_epoch_indices = np.random.randint(0, num_epochs, size=num_epochs)
+        # Create bootstrap samples for target and non-target
+        bootstrap_sample = combined_epochs[bootstrap_epoch_indices]
+        bootstrap_target_sample = bootstrap_sample[:len(target_epochs)]
+        bootstrap_nontarget_sample = bootstrap_sample[len(target_epochs):]
+
+        # Calculate the difference between the means of the bootstrap samples
+        bootstrap_diff = np.mean(bootstrap_target_sample, axis=0) - np.mean(bootstrap_nontarget_sample, axis=0)
+        bootstrap_diffs[i] = bootstrap_diff
     
-    # Calculate p-values: proportion of bootstrap differences as extreme as the observed difference
-    p_values = np.mean(np.abs(bootstrap_diffs) >= np.abs(observed_diff[None, :, :]), axis=0)
+    # Calculate proportion of bootstrap differences at least as extreme as the observed difference
+    p_values = np.sum(np.abs(bootstrap_diffs) >= np.abs(observed_diff), axis=0) / num_iterations
     
     return p_values
 
@@ -186,7 +189,7 @@ def bootstrap_p_values(target_epochs, nontarget_epochs, num_iterations=3000):
 
 from mne.stats import fdr_correction
 
-def plot_confidence_intervals_with_significance(target_erp, nontarget_erp, erp_times, target_epochs, nontarget_epochs, p_values):
+def plot_confidence_intervals_with_significance(target_erp, nontarget_erp, erp_times, target_epochs, nontarget_epochs, p_values, subject_number):
     """
         Plots the ERPs on each channel for target and nontarget events, including confidence intervals and significant differences marked with dots.
 
@@ -197,26 +200,31 @@ def plot_confidence_intervals_with_significance(target_erp, nontarget_erp, erp_t
          - target_epochs <numpy.ndarray>[NUM_TARGET_EPOCHS, SAMPLES_PER_EPOCH, NUM_CHANNELS] : List of epochs where target letter is included in row/column.
          - nontarget_epochs: <numpy.ndarray>[NUM_NONTARGET_EPOCHS, SAMPLES_PER_EPOCH, NUM_CHANNELS] : List of epochs where target letter is NOT included in row/column.
          - p_values: <np.array>[SAMPLES_PER_EPOCH, NUM_CHANNELS] : p-values for each time point and channel
-         - subject_number <int> : identifier for the subject (used for saving the plot)
-         - data_directory <str> : optional path for saving plots
+         - subject_number <int> : Subject ID we are analyzing, used for saving resulting graph image.
         
         Returns:
          - None
     """
-    # Adjust the function to calculate and plot as before
+    # Calculate se_mean for both target and nontarget ERPs
     target_se_mean = calculate_se_mean(target_epochs)
     nontarget_se_mean = calculate_se_mean(nontarget_epochs)
+    
+    # Determine the number of channels from the shape of the data
     num_channels = target_erp.shape[1]
 
+    # Define the layout of the subplots. Adusts the number of rows based on the number of channels
     cols = 3
     rows = num_channels // cols + (num_channels % cols > 0)
     plt.figure(figsize=(10, rows * 3))
 
-    # FDR correction
+    # Apply FDR correction to p-values with an alpha threshold of 0.05 and store the corrected p-values.
     _, corrected_p_values = fdr_correction(p_values, alpha=0.05)
 
     for channel_index in range(num_channels):
+        # Create a subplot of all the channels for the current subject
         plt.subplot(rows, cols, channel_index + 1)
+        
+        # Pulls target_erp, nontarget_erp, target_se_mean, and nontarget_se_mean for each channel
         target_erp_channel = target_erp[:, channel_index]
         nontarget_erp_channel = nontarget_erp[:, channel_index]
         target_se_mean_channel = target_se_mean[:, channel_index]
@@ -226,17 +234,18 @@ def plot_confidence_intervals_with_significance(target_erp, nontarget_erp, erp_t
         plt.plot(erp_times, target_erp_channel, label='Target ERP')        
         plt.plot(erp_times, nontarget_erp_channel, label='Non-Target ERP')
         
-        
         # Mark significant differences with dots
         significant_times = erp_times[corrected_p_values[:, channel_index] < 0.05]
         # Flag to ensure we only add the p_value label once
         first_time_labeling_flag = True
         for time in significant_times:
+            # Also include label if first addition
             if first_time_labeling_flag:
-                plt.plot(time, 0, 'ko', label='p_FDR < 0.05')  # 'ko' for black dots
+                plt.plot(time, 0, 'ko', label=r'$p_{FDR}$ < 0.05')
                 first_time_labeling_flag = False
+            # Otherwise, plot normally
             else:
-                plt.plot(time, 0, 'ko')  # 'ko' for black dots
+                plt.plot(time, 0, 'ko')
         
         # Fill in 95% confidence interval by adding/subtracting 2*SEM to/from mean ERP.
         plt.fill_between(erp_times, target_erp_channel - 2 * target_se_mean_channel, target_erp_channel + 2 * target_se_mean_channel, alpha=0.2, label='Target +/- 95% CI')
@@ -246,16 +255,19 @@ def plot_confidence_intervals_with_significance(target_erp, nontarget_erp, erp_t
         plt.axhline(0, color='black', linestyle='dotted')
         plt.axvline(0, color='black', linestyle='dotted')
 
+        # Add axis labels and title
         plt.xlabel('Time (ms)')
         plt.ylabel('Amplitude (µV)')
         plt.title(f'Channel {channel_index}')
         
+        # Only show the legend on the last subplot
         if (channel_index == num_channels - 1):
-            plt.legend()
+            plt.legend(loc='lower right')
 
     plt.tight_layout()
 
     # Save the plot
-    #plt.savefig(f'{data_directory}subject_{subject_number}_ERP_significance.png')
-    #plt.close()  # Close the plot explicitly after saving
+    plt.savefig(f'output/subject_{subject_number}_ERP_significance.png')
+    # Close plot after saving
+    plt.close()
 
