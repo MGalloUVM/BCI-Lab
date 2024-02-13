@@ -136,7 +136,7 @@ def plot_confidence_intervals(target_erp, nontarget_erp, erp_times, target_epoch
     
     # Show plot in a tight layout
     plt.tight_layout()
-    plt.show()
+    #plt.show()
 
 
 #%% Part C
@@ -269,5 +269,88 @@ def plot_confidence_intervals_with_significance(target_erp, nontarget_erp, erp_t
     # Save the plot
     plt.savefig(f'output/subject_{subject_number}_ERP_significance.png')
     # Close plot after saving
+    plt.close()
+
+
+#%%
+# Part E
+def eval_across_subjects():
+    """
+        Evaluates significant EEG responses across all subjects and channels, compiles the results, 
+        and plots a summary graph. Calls plot_significance_across_subjects method after all calculations.
+        
+        Parameters:
+        - None
+    
+        Returns:
+        - None
+    """
+    # Initialize a list to hold significant channels and time points across subjects
+    significant_channels_timepoints = []
+
+    # Loop through each subject
+    for subject_number in range(3, 11):  # Subjects 3 to 10
+        # Prepare epoch data
+        target_erp, nontarget_erp, erp_times, target_epochs, nontarget_epochs = prepare_epoch_data(subject_number)
+
+        # Calculate p-values using bootstrapping
+        p_values = bootstrap_p_values(target_epochs, nontarget_epochs)
+
+        # Plot ERPs with significance and save the plot
+        plot_confidence_intervals_with_significance(target_erp, nontarget_erp, erp_times, target_epochs, nontarget_epochs, p_values, subject_number)
+
+        # Update significant_channels_timepoints with results from this subject
+        _, corrected_p_values = fdr_correction(p_values, alpha=0.05)
+        
+        # Boolean array of significant points
+        significant = corrected_p_values < 0.05  
+        
+        # Add to significant_channels_timepoints array
+        significant_channels_timepoints.append(significant)
+
+    # After processing all subjects, compile results to find common significant points from the values in significant_channels_timepoints array
+    all_significant = np.sum(np.array(significant_channels_timepoints), axis=0)
+
+    # Transpose to shape (8, 384)
+    all_significant = all_significant.T
+
+    # Plot the compiled significant points across all subjects
+    plot_significance_across_subjects(all_significant, erp_times)
+
+
+def plot_significance_across_subjects(all_significant, erp_times):
+    """
+        Plots subjects that have a significant EEG response for each channel at each time point. Saves
+        this graph to a figure in output called significance_across_subjects.png.
+
+        Parameters:
+        - all_significant <np.ndarray>[NUM_CHANNELS, SAMPLES_PER_EPOCH] : A 2D array where each element 
+          at [i, j] represents the count of subjects with a significant response in channel i at time point j.
+        - erp_times <np.ndarray>[SAMPLES_PER_EPOCH] : Array of time points for ERP data sampling, relative to 
+          the onset of a stimulus.
+    """
+    # Determine the number of channels
+    num_channels = all_significant.shape[0]
+
+    # Define the layout of the subplots
+    cols = 3 # Number of columns for the plot
+    rows = num_channels // cols + (num_channels % cols > 0) # Number of rows is based on the channels and the columns
+    plt.figure(figsize=(10, rows * 3)) # Create size of the figure
+
+    # Plot each channel on the graph as a subplot
+    for channel_index in range(num_channels):
+        plt.subplot(rows, cols, channel_index + 1)
+        plt.plot(erp_times, all_significant[channel_index, :], label=f'Channel {channel_index+1} Significance Count')
+        plt.xlabel('Time (ms)')
+        plt.ylabel('Number of Subjects')
+        plt.title(f'Channel {channel_index+1} Significance Across Subjects')
+        plt.legend()
+
+    plt.tight_layout()
+    
+    # Save the plot to the output folder
+    plt.savefig('output/significance_across_subjects.png')
+    
+    # .close() to help with run time
     plt.close()
 
