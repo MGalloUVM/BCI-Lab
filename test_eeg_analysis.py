@@ -42,3 +42,10 @@ plot_confidence_intervals_with_significance(target_erp, nontarget_erp, erp_times
 from eeg_analysis import eval_across_subjects
 
 eval_across_subjects()
+
+#%%
+# Part F
+from eeg_analysis import plot_group_median_erp_spatial_distribution
+
+plot_group_median_erp_spatial_distribution()
+

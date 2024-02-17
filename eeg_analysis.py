@@ -354,3 +354,59 @@ def plot_significance_across_subjects(all_significant, erp_times):
     # .close() to help with run time
     plt.close()
 
+#%% 
+# Part F
+import plot_topo
+
+def plot_group_median_erp_spatial_distribution():
+    """
+    Calculates and plots the median ERP distrubtion for both N2 and P3b voltages found in
+    the epoch data. Plots each median on a separate spatial map to help visualize the voltages.
+    
+    Parameters:
+        None
+    Returns:
+        None
+
+    """
+    # Define list vars
+    group_median_erps = []
+    channel_names = ['Fz', 'Cz', 'P3', 'Pz', 'P4', 'PO7', 'PO8', 'Oz']
+    erp_times_global = None
+
+    # Iterate through subjects 3-10
+    for subject_number in range(3, 11):
+        # Load epochs and event info using the prepare_epoch_data function
+        target_erp, nontarget_erp, erp_times, target_epochs, nontarget_epochs = prepare_epoch_data(subject_number)
+        
+        # Use erp_times from the first subject as global ERP times
+        if erp_times_global is None:
+            erp_times_global = erp_times
+
+        group_median_erps.append(target_erp)
+
+    # Convert list to a NumPy array for further processing
+    group_median_erps_array = np.stack(group_median_erps)
+
+    # Compute the final median ERP across subjects
+    final_median_erp = np.median(group_median_erps_array, axis=0)
+
+    # Plot for N2 and P3b ranges
+    # The range for each N2 Median (200, 300) was based off when these voltages are most likely to occur, 200 milliseconds - 300 milliseconds
+    # The range for each P3b Median (300, 600) was based off when these voltages are most likely to occur, 300 milliseconds - 600 milliseconds
+    for time_range, plot_title in [((200, 300), "N2 Median Voltages"), ((300, 600), "P3b Median Voltages")]:
+        # Convert time_range from milliseconds to seconds
+        time_range_seconds = (time_range[0] * 0.001, time_range[1] * 0.001)
+        
+        # Find indices within the specified time ranges
+        # Uses the first subject's erp time (erp_times_global) as a comparator for the range of the graph
+        time_indices = np.where((erp_times_global >= time_range_seconds[0]) & (erp_times_global <= time_range_seconds[1]))[0]
+
+        # Calculate median ERP range using the time indicies found previously
+        median_erp_range = final_median_erp[time_indices, :].mean(axis=0)
+
+        # Open both figures
+        plt.figure()
+        
+        # Use plot_topo function to plot the spatial distribution of ERPs
+        plot_topo.plot_topo(channel_names=channel_names, channel_data=median_erp_range, title=plot_title)
