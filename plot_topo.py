@@ -61,13 +61,22 @@ def plot_topo(channel_names=[], channel_data=[],title='',cbar_label='Voltage (uV
     fake_evoked = mne.EvokedArray(channel_data, fake_info)
     fake_evoked.set_montage(montage) # set montage (channel locations)
     
-    # Clear current axes
-    plt.cla()    
     # Plot topomap on current axes    
     im,_ = mne.viz.plot_topomap(fake_evoked.data[:, 0], fake_evoked.info,show=True)
     # Annotate plot
     plt.title(title)
     cbar = plt.colorbar(im,label=cbar_label)
+    
+    # Set graph size
+    fig = plt.gcf()
+    fig.set_size_inches(10, 10)
+    
+    # Save the figure
+    if title == 'N2 Median Voltages':
+        plt.savefig('output/N2_topomap.png')
+    elif title == 'P3b Median Voltages':
+        plt.savefig('output/P3b_topomap.png')
+
     
     # return image and colorbar objects
     return im,cbar

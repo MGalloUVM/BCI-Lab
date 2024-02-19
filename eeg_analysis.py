@@ -404,9 +404,6 @@ def plot_group_median_erp_spatial_distribution():
 
         # Calculate median ERP range using the time indicies found previously
         median_erp_range = final_median_erp[time_indices, :].mean(axis=0)
-
-        # Open both figures
-        plt.figure()
         
         # Use plot_topo function to plot the spatial distribution of ERPs
         plot_topo.plot_topo(channel_names=channel_names, channel_data=median_erp_range, title=plot_title)
