@@ -335,16 +335,18 @@ def plot_significance_across_subjects(all_significant, erp_times):
     # Define the layout of the subplots
     cols = 3 # Number of columns for the plot
     rows = num_channels // cols + (num_channels % cols > 0) # Number of rows is based on the channels and the columns
-    plt.figure(figsize=(10, rows * 3)) # Create size of the figure
+    plt.figure(figsize=(10, rows * 3), clear=True) # Create size of the figure
+    plt.suptitle('Significance Across Subjects per Channel')
 
     # Plot each channel on the graph as a subplot
     for channel_index in range(num_channels):
         plt.subplot(rows, cols, channel_index + 1)
-        plt.plot(erp_times, all_significant[channel_index, :], label=f'Channel {channel_index+1} Significance Count')
+        plt.plot(erp_times, all_significant[channel_index, :])
+        plt.ylim(-0.1, 4.1)
         plt.xlabel('Time (ms)')
         plt.ylabel('Number of Subjects')
-        plt.title(f'Channel {channel_index+1} Significance Across Subjects')
-        plt.legend()
+        plt.title(f'Channel {channel_index} Significance Count')
+        plt.grid(visible=True)
 
     plt.tight_layout()
     
