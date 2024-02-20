@@ -15,7 +15,7 @@ import mne
 
 
 # Declare main function
-def plot_topo(channel_names=[], channel_data=[],title='',cbar_label='Voltage (uV)',montage_name='biosemi64'):
+def plot_topo(channel_names=[], channel_data=[],title='',cbar_label='Voltage (uV)',montage_name='biosemi64', save_fig=False, fig_filename=''):
     """
     Plots a topomap (colored brain) of the specified channels and values.
 
@@ -71,12 +71,14 @@ def plot_topo(channel_names=[], channel_data=[],title='',cbar_label='Voltage (uV
     fig = plt.gcf()
     fig.set_size_inches(10, 10)
     
-    # Save the figure
-    if title == 'N2 Median Voltages':
-        plt.savefig('output/N2_topomap.png')
-    elif title == 'P3b Median Voltages':
-        plt.savefig('output/P3b_topomap.png')
+    # Save the figure if requested
+    if save_fig and fig_filename:
+        plt.savefig(fig_filename)
+        print(f"Figure saved as {fig_filename}")
+    elif save_fig and not fig_filename:
+        print("Error: Filename must be provided to save the figure.")
 
+    plt.close(fig)  # Close the figure to free up memory
     
     # return image and colorbar objects
     return im,cbar

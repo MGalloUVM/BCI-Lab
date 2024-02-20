@@ -386,6 +386,23 @@ def plot_group_median_erp_spatial_distribution():
             erp_times_global = erp_times
 
         group_median_erps.append(target_erp)
+        
+        # Plot each subject's ERP data
+        # The range for each N2 Median (200, 300) was based off when these voltages are most likely to occur, 200 milliseconds - 300 milliseconds
+        # The range for each P3b Median (300, 600) was based off when these voltages are most likely to occur, 300 milliseconds - 600 milliseconds
+        for time_range, plot_title in [((200, 300), f"Subject {subject_number} N2 Voltages"), ((300, 600), f"Subject {subject_number} P3b Voltages")]:
+            # Convert time_range from milliseconds to seconds
+            time_range_seconds = (time_range[0] * 0.001, time_range[1] * 0.001)
+            
+            # Find indices within the specified time ranges
+            # Uses the first subject's erp time (erp_times_global) as a comparator for the range of the graph
+            time_indices = np.where((erp_times >= time_range_seconds[0]) & (erp_times <= time_range_seconds[1]))[0]
+            
+            # Calculate median ERP range using the time indicies found previously
+            subject_erp_range = target_erp[time_indices, :].mean(axis=0)
+            
+            # Use plot_topo function to plot the spatial distribution of ERPs
+            plot_topo.plot_topo(channel_names=channel_names, channel_data=subject_erp_range, title=plot_title, save_fig=True, fig_filename=f"output/Subject_{subject_number}_{plot_title}.png")
 
     # Convert list to a NumPy array for further processing
     group_median_erps_array = np.stack(group_median_erps)
@@ -396,7 +413,7 @@ def plot_group_median_erp_spatial_distribution():
     # Plot for N2 and P3b ranges
     # The range for each N2 Median (200, 300) was based off when these voltages are most likely to occur, 200 milliseconds - 300 milliseconds
     # The range for each P3b Median (300, 600) was based off when these voltages are most likely to occur, 300 milliseconds - 600 milliseconds
-    for time_range, plot_title in [((200, 300), "N2 Median Voltages"), ((300, 600), "P3b Median Voltages")]:
+    for time_range, plot_title in [((200, 300), "Group N2 Median Voltages"), ((300, 600), "Group P3b Median Voltages")]:
         # Convert time_range from milliseconds to seconds
         time_range_seconds = (time_range[0] * 0.001, time_range[1] * 0.001)
         
@@ -408,4 +425,4 @@ def plot_group_median_erp_spatial_distribution():
         median_erp_range = final_median_erp[time_indices, :].mean(axis=0)
         
         # Use plot_topo function to plot the spatial distribution of ERPs
-        plot_topo.plot_topo(channel_names=channel_names, channel_data=median_erp_range, title=plot_title)
+        plot_topo.plot_topo(channel_names=channel_names, channel_data=median_erp_range, title=plot_title, save_fig=True, fig_filename=f"output/Group_{plot_title}.png")
