@@ -2,7 +2,7 @@
 Created on Wed Jan 17, 5:50pm 2024
 @authors: Michael Gallo, Nick Kent
 
-FINISH WHEN FILE IS COMPLETE?
+TODO FINISH WHEN FILE IS COMPLETE?
 """
 from matplotlib import pyplot as plt
 import numpy as np
@@ -373,7 +373,7 @@ def plot_group_median_erp_spatial_distribution():
     """
     # Define list vars
     group_median_erps = []
-    channel_names = ['Fz', 'Cz', 'P3', 'Pz', 'P4', 'PO7', 'PO8', 'Oz']
+    channel_names = ['Fz', 'Cz', 'P3', 'Pz', 'P4', 'PO7', 'Oz', 'PO8']
     erp_times_global = None
 
     # Iterate through subjects 3-10
