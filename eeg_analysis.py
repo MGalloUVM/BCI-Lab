@@ -382,7 +382,7 @@ def plot_group_median_erp_spatial_distribution():
         target_erp, nontarget_erp, erp_times, target_epochs, nontarget_epochs = prepare_epoch_data(subject_number)
         
         # Use erp_times from the first subject as global ERP times
-        if erp_times_global is None:
+        if erp_times_global is None:# TODO
             erp_times_global = erp_times
 
         group_median_erps.append(target_erp)
@@ -394,15 +394,12 @@ def plot_group_median_erp_spatial_distribution():
     final_median_erp = np.median(group_median_erps_array, axis=0)
 
     # Plot for N2 and P3b ranges
-    # The range for each N2 Median (200, 300) was based off when these voltages are most likely to occur, 200 milliseconds - 300 milliseconds
-    # The range for each P3b Median (300, 600) was based off when these voltages are most likely to occur, 300 milliseconds - 600 milliseconds
-    for time_range, plot_title in [((200, 300), "N2 Median Voltages"), ((300, 600), "P3b Median Voltages")]:
-        # Convert time_range from milliseconds to seconds
-        time_range_seconds = (time_range[0] * 0.001, time_range[1] * 0.001)
-        
+    # The range for each N2 Median (.2, .3) was based off when these voltages are most likely to occur, .2 milliseconds - .3 milliseconds
+    # The range for each P3b Median (.3, .6) was based off when these voltages are most likely to occur, .3 milliseconds - .6 milliseconds
+    for time_range, plot_title in [((.2, .3), "N2 Median Voltages"), ((.3, .6), "P3b Median Voltages")]:
         # Find indices within the specified time ranges
         # Uses the first subject's erp time (erp_times_global) as a comparator for the range of the graph
-        time_indices = np.where((erp_times_global >= time_range_seconds[0]) & (erp_times_global <= time_range_seconds[1]))[0]
+        time_indices = np.where((erp_times_global >= time_range[0]) & (erp_times_global <= time_range[1]))[0]
 
         # Calculate median ERP range using the time indicies found previously
         median_erp_range = final_median_erp[time_indices, :].mean(axis=0)
