@@ -83,7 +83,7 @@ def calculate_se_mean(epochs):
     return se_mean
 
 
-def plot_confidence_intervals(target_erp, nontarget_erp, erp_times, target_epochs, nontarget_epochs):
+def plot_confidence_intervals(target_erp, nontarget_erp, erp_times, target_epochs, nontarget_epochs, subject_number='X'):
     """
         Plots the ERPs on each channel for target and nontarget events.
         Plots confidence intervals as error bars around these ERPs.
@@ -95,6 +95,7 @@ def plot_confidence_intervals(target_erp, nontarget_erp, erp_times, target_epoch
          - erp_times <np.ndarray>[SAMPLES_PER_EPOCH] : time points relative to flashing onset.
          - target_epochs <numpy.ndarray>[NUM_TARGET_EPOCHS, SAMPLES_PER_EPOCH, NUM_CHANNELS] : List of epochs where target letter is included in row/column.
          - nontarget_epochs: <numpy.ndarray>[NUM_NONTARGET_EPOCHS, SAMPLES_PER_EPOCH, NUM_CHANNELS] : List of epochs where target letter is NOT included in row/column.
+         - subject_number <int/str> : Subject ID we are analyzing, used for saving resulting graph image.
              
         Returns:
          - None
@@ -131,16 +132,29 @@ def plot_confidence_intervals(target_erp, nontarget_erp, erp_times, target_epoch
         plt.fill_between(erp_times, target_erp_channel - 2 * target_se_mean_channel, target_erp_channel + 2 * target_se_mean_channel, alpha=0.2, label='Target +/- 95% CI')
         plt.fill_between(erp_times, nontarget_erp_channel - 2 * nontarget_se_mean_channel, nontarget_erp_channel + 2 * nontarget_se_mean_channel, alpha=0.2, label='Non-Target +/- 95% CI')
         
+        # Add reference lines at x=0 and y=0
+        plt.axhline(0, color='black', linestyle='dotted')
+        plt.axvline(0, color='black', linestyle='dotted')
+
         plt.xlabel('Time (ms)') # X axis label
         plt.ylabel('Amplitude (µV)') # Y axis label
         plt.title(f'Channel {channel_index}') # Title
-        
-        if (channel_index == num_channels - 1):
-            plt.legend()
+
+    # Add an empty subplot for the legend
+    plt.subplot(rows, cols, num_channels + 1)
+    plt.plot([], [], '-', label="Target ERP")
+    plt.plot([], [], '-', label="Non-Target ERP")
+    plt.fill_between([], [], [], alpha=0.2, label='Target +/- 95% CI')
+    plt.fill_between([], [], [], alpha=0.2, label='Nontarget +/- 95% CI')
+    plt.legend(loc='center')
+    plt.axis('off')
+    plt.suptitle(f'Mean ERP for Subject {str(subject_number)}')
+
+    plt.tight_layout()
     
     # Show plot in a tight layout
     plt.tight_layout()
-    #plt.show()
+    plt.show()
 
 
 #%% Part C
@@ -263,10 +277,17 @@ def plot_confidence_intervals_with_significance(target_erp, nontarget_erp, erp_t
         plt.xlabel('Time (ms)')
         plt.ylabel('Amplitude (µV)')
         plt.title(f'Channel {channel_index}')
-        
-        # Only show the legend on the last subplot
-        if (channel_index == num_channels - 1):
-            plt.legend(loc='lower right')
+
+    # Add an empty subplot for the legend
+    plt.subplot(rows, cols, num_channels + 1)
+    plt.plot([], [], '-', label="Target ERP")
+    plt.plot([], [], '-', label="Non-Target ERP")
+    plt.plot([], [], 'ko', label=r'$p_{FDR}$ < 0.05')
+    plt.fill_between([], [], [], alpha=0.2, label='Target +/- 95% CI')
+    plt.fill_between([], [], [], alpha=0.2, label='Nontarget +/- 95% CI')
+    plt.legend(loc='center')
+    plt.axis('off')
+    plt.suptitle(f'Significance Values Over Mean ERP for Subject {subject_number}')
 
     plt.tight_layout()
 
@@ -349,9 +370,10 @@ def plot_significance_across_subjects(all_significant, erp_times):
         plt.ylim(-0.1, 4.1)
         plt.xlabel('Time (ms)')
         plt.ylabel('Number of Subjects')
-        plt.title(f'Channel {channel_index} Significance Count')
+        plt.title(f'Channel {channel_index}')
         plt.grid(visible=True)
 
+    plt.suptitle('Significant Result Count Over Subjects')
     plt.tight_layout()
     
     # Save the plot to the output folder
@@ -392,21 +414,18 @@ def plot_group_median_erp_spatial_distribution():
         group_median_erps.append(target_erp)
         
         # Plot each subject's ERP data
-        # The range for each N2 Median (200, 300) was based off when these voltages are most likely to occur, 200 milliseconds - 300 milliseconds
-        # The range for each P3b Median (300, 600) was based off when these voltages are most likely to occur, 300 milliseconds - 600 milliseconds
-        for time_range, plot_title in [((200, 300), f"Subject {subject_number} N2 Voltages"), ((300, 600), f"Subject {subject_number} P3b Voltages")]:
-            # Convert time_range from milliseconds to seconds
-            time_range_seconds = (time_range[0] * 0.001, time_range[1] * 0.001)
-            
+        # The range for each N2 Median (.2, .3) was based off when these voltages are most likely to occur, 200 milliseconds - 300 milliseconds
+        # The range for each P3b Median (.3, .6) was based off when these voltages are most likely to occur, 300 milliseconds - 600 milliseconds
+        for time_range, plot_title in [((.2, .3), f"Subject {subject_number} N2 Voltages"), ((.3, .6), f"Subject {subject_number} P3b Voltages")]:
             # Find indices within the specified time ranges
             # Uses the first subject's erp time (erp_times_global) as a comparator for the range of the graph
-            time_indices = np.where((erp_times >= time_range_seconds[0]) & (erp_times <= time_range_seconds[1]))[0]
+            time_indices = np.where((erp_times >= time_range[0]) & (erp_times < time_range[1]))[0]
             
             # Calculate median ERP range using the time indicies found previously
             subject_erp_range = target_erp[time_indices, :].mean(axis=0)
             
-            # Use plot_topo function to plot the spatial distribution of ERPs
-            plot_topo.plot_topo(channel_names=channel_names, channel_data=subject_erp_range, title=plot_title, save_fig=True, fig_filename=f"output/Subject_{subject_number}_{plot_title}.png")
+            # Use plot_topo function to plot the spatial distribution of ERPs3
+            plot_topo.plot_topo(channel_names=channel_names, channel_data=subject_erp_range, title=plot_title, save_fig=True, fig_filename=f"output/subject_{subject_number}_{plot_title}.png")
 
     # Convert list to a NumPy array for further processing
     group_median_erps_array = np.stack(group_median_erps)
@@ -426,4 +445,4 @@ def plot_group_median_erp_spatial_distribution():
         median_erp_range = final_median_erp[time_indices, :].mean(axis=0)
         
         # Use plot_topo function to plot the spatial distribution of ERPs
-        plot_topo.plot_topo(channel_names=channel_names, channel_data=median_erp_range, title=plot_title, save_fig=True, fig_filename=f"output/Group_{plot_title}.png")
+        plot_topo.plot_topo(channel_names=channel_names, channel_data=median_erp_range, title=plot_title, save_fig=True, fig_filename=f"output/group_{plot_title}.png")

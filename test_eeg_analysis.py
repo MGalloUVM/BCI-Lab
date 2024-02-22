@@ -23,7 +23,7 @@ target_erp, nontarget_erp, erp_times, target_epochs, nontarget_epochs = prepare_
 from eeg_analysis import plot_confidence_intervals
 
 # Plot ERPs with confidence intervals
-plot_confidence_intervals(target_erp, nontarget_erp, erp_times, target_epochs, nontarget_epochs)
+plot_confidence_intervals(target_erp, nontarget_erp, erp_times, target_epochs, nontarget_epochs, subject_number)
 
 #%%
 # Part C
