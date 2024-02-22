@@ -408,7 +408,7 @@ def plot_group_median_erp_spatial_distribution():
         target_erp, nontarget_erp, erp_times, target_epochs, nontarget_epochs = prepare_epoch_data(subject_number)
         
         # Use erp_times from the first subject as global ERP times
-        if erp_times_global is None:# TODO
+        if erp_times_global is None:
             erp_times_global = erp_times
 
         group_median_erps.append(target_erp)

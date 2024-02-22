@@ -64,7 +64,7 @@ def plot_topo(channel_names=[], channel_data=[],title='',cbar_label='Voltage (uV
     fake_evoked.set_montage(montage) # set montage (channel locations)
     
     # Plot topomap on current axes    
-    im,_ = mne.viz.plot_topomap(fake_evoked.data[:, 0], fake_evoked.info,show=True)
+    im,_ = mne.viz.plot_topomap(fake_evoked.data[:, 0], fake_evoked.info,show=False)
     # Annotate plot
     plt.title(title)
     cbar = plt.colorbar(im,label=cbar_label)
@@ -80,6 +80,7 @@ def plot_topo(channel_names=[], channel_data=[],title='',cbar_label='Voltage (uV
     elif save_fig and not fig_filename:
         print("Error: Filename must be provided to save the figure.")
 
+    plt.show()
     plt.close(fig)  # Close the figure to free up memory
     
     # return image and colorbar objects
