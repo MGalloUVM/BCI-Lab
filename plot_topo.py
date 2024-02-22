@@ -5,6 +5,8 @@ plot_topo.py
 
 Created on Mon Sep  6 13:06:10 2021
 
+NOTE: MODIFIED plot_topo.py TO ADD SAVING FUNCTIONALITY AND REDUCE POPUP WINDOWS
+
 @author: djangraw
 """
 

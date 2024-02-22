@@ -2,7 +2,11 @@
 Created on Wed Jan 17, 5:50pm 2024
 @authors: Michael Gallo, Nick Kent
 
-TODO FINISH WHEN FILE IS COMPLETE?
+eeg_analysis, the purpose of application is to analyize data from a P300 device
+to find when a subject has a statistically significant reaction to a target event.
+These events are then plotted on spatial maps for easy viewing of specific electrode
+reactions. Allows the users of this program to have informative data to further improve on
+future uses of the P300 device.
 """
 from matplotlib import pyplot as plt
 import numpy as np
