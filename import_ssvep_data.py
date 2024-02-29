@@ -24,23 +24,25 @@ def load_ssvep_data(subject, data_directory):
 
     Returns:
     -------
+    (a=num_channels, b=num_samples, c=num_events/num_trials)
     data_dict <dict>
         Dictionary containing the following keys:
-        'eeg' <np.ndarray, shape=(x,y)> : float
+        'eeg' <np.ndarray, shape=(a,b)> : float
             Raw EEG data in uV, ordered by channel.
-            - x : EEG channel index
-            - y : Data sample index
-        'channels' <np.ndarray, shape=(x,)> : str
+            - a : EEG channel index
+            - b : Data sample index (uV)
+        'channels' <np.ndarray, shape=(a,)> : str
             Channel names, represented in <str> format.
-            - x : EEG channel index
+            - a : EEG channel index
         'fs' <np.ndarray, shape=()> : int
+            (0-dimensional array)
             The sampling frequency, in Hz, represented as <float> in a 0-dimensional array
-        'event_samples' <np.ndarray, shape=(x,)> : int
+        'event_samples' <np.ndarray, shape=(c,)> : int
             The sample index at which each event occurred.
-            - x : Event number/index
-        'event_types' <np.ndarray, shape=(x,)> : str
+            - c : Event number/index
+        'event_types' <np.ndarray, shape=(c,)> : str
             The frequency of flickering checkerboard that starts flashing for each event. (Either '12hz' or '15hz' <str>)
-            - x : Event number/index
+            - c : Event number/index
     '''
     # Load information from np file into dictionary
     data = np.load(f'{data_directory}/SSVEP_S{subject}.npz', allow_pickle=True)
@@ -55,15 +57,16 @@ def plot_raw_data(data, subject, channels_to_plot):
 
     Parameters:
     ----------
-    data <np.ndarray, shape=(x,y)> : float
+    (a=num_channels, b=num_samples)
+    data <np.ndarray, shape=(a,b)> : float
         Raw EEG data in uV, ordered by channel.
-        - x : EEG channel index
-        - y : Data sample index
+        - a : EEG channel index
+        - b : Data sample index
     subject <int>
         Subject number, as shown in file title (Ex: SSVEP_S1, 1 is the subject number)
-    channels_to_plot <np.ndarray, shape=(x,)> : <str>
+    channels_to_plot <np.ndarray, shape=(a,)> : <str>
         Channel names to plot in different subplots.
-        - x : EEG channel index
+        - a : EEG channel index
 
     Returns:
     -------
@@ -81,24 +84,25 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
 
     Parameters:
     ----------
+    (a=num_channels, b=num_samples, c=num_events/num_trials)
     data_dict <dict>
         Dictionary containing the following keys:
-        'eeg' <np.ndarray, shape=(x,y)> : float
+        'eeg' <np.ndarray, shape=(a,b)> : float
             Raw EEG data in uV, ordered by channel.
-            - x : EEG channel index
-            - y : Data sample index (uV)
-        'channels' <np.ndarray, shape=(x,)> : str
+            - a : EEG channel index
+            - b : Data sample index (uV)
+        'channels' <np.ndarray, shape=(a,)> : str
             Channel names, represented in <str> format.
-            - x : EEG channel index
+            - a : EEG channel index
         'fs' <np.ndarray, shape=()> : int
             (0-dimensional array)
             The sampling frequency, in Hz, represented as <float> in a 0-dimensional array
-        'event_samples' <np.ndarray, shape=(x,)> : int
+        'event_samples' <np.ndarray, shape=(c,)> : int
             The sample index at which each event occurred.
-            - x : Event number/index
-        'event_types' <np.ndarray, shape=(x,)> : str
+            - c : Event number/index
+        'event_types' <np.ndarray, shape=(c,)> : str
             The frequency of flickering checkerboard that starts flashing for each event. (Either '12hz' or '15hz' <str>)
-            - x : Event number/index
+            - c : Event number/index
     epoch_start_time <float>
         Desired start time of epoch relative to the event, in seconds.
     epoch_end_time <float>
@@ -106,20 +110,22 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
 
     Returns:
     -------
-    eeg_epochs <np.array, shape=(x, y, z)> : float
+    (a=num_epochs, b=num_channels, c=num_samples)
+    eeg_epochs <np.array, shape=(a, b, c)> : float
         EEG data in each epoch (in uV).
-        x : Epoch index
-        y : Channel index
-        z : Sample index
-    epoch_times <np.array, shape=(x,)> : float
+        a : Epoch index
+        b : Channel index
+        c : Sample index
+    epoch_times <np.array, shape=(c,)> : float
         The time in seconds (relative to the event) of each time point in eeg_epochs.
-        x : Sample index
-    is_trial_15Hz <np.array, shape=(x,)> : boolean
+        c : Sample index
+    is_trial_15Hz <np.array, shape=(a,)> : boolean
         Array of booleans telling whether each trial was/was not a 15Hz trial.
-        x : Trial index
+        a : Trial index
     '''
 
     eeg_epochs = np.zeros((1,2))#shape=(num_epochs, num_channels, num_samples_per_epoch))
+
     epoch_times = np.zeros((1,2))#shape=(num_samples_per_epoch))
     is_trial_15Hz = data_dict['event_types'] == '15hz'
     print(is_trial_15Hz)
@@ -134,19 +140,27 @@ def get_frequency_spectrum(eeg_epochs,fs):
 
     Parameters:
     ----------
-    eeg_epochs <array> : TYPE, shape(trials, size, time)
+    (a=num_epochs, b=num_channels, c=num_samples)
+    eeg_epochs <np.array, shape(a, b, c)>
         DESCRIPTION
+        a : Epoch index
+        b : Channel index
+        c : Sample index
     fs : float
         Sampling frequency (Hz)
     
     Returns:
     -------
-    eeg_epochs_fft : np.array, shape(trials, size, frequency)
+    (a=num_epochs, b=num_channels, c=frequency??)
+    eeg_epochs_fft <np.array, shape=(a, b, c)>
         DESCRIPTION
-    fft_frequencies : np.array, shape(frequency for each column in FFT)
+        a : Epoch index
+        b : Channel index
+        c : frequency
+    fft_frequencies <np.array, shape=c?>
         DESCRIPTION
+        c : frequency
     '''
-    
     pass
 
 #%% Part 5
