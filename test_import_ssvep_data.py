@@ -2,15 +2,15 @@
 """
 Created on Thu Feb 22 11:14:55 2024
 
-@author: Tynan Gacy
+@authors: Michael Gallo, Tynan Gacy
 """
 
-import numpy as np
-import matplotlib as plt
-import scipy.fft
 import import_ssvep_data
 
-load_ssvep_data(1,"Ssvep_Data")
+subject_num = 1
+data_directory = './SsvepData'
+
+import_ssvep_data.load_ssvep_data(subject_num, data_directory)
 
 
 

@@ -2,25 +2,29 @@
 """
 Created on Thu Feb 22 11:14:55 2024
 
-@author: Tynan Gacy
+@authors: Michael Gallo, Tynan Gacy
 """
 
 #%% Part 1
 
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import scipy.fft
 
-def load_ssvep_data(subject,data_directory):
-    data_dict = "the dictionary of information about the dataset, as described in the README for this dataset"
+def load_ssvep_data(subject, data_directory):
+    '''
+    FUNCTION DESCRIPTION
+    Inputs:
+     - subject <int> : Subject number, as shown in file title (Ex: SSVEP_S1, 1 is the subject number)
+     - data_directory <str> : Path from execution directory to folder containing ssvep data files.
+    Outputs:
+     - data_dict <> :
+    '''
+    # Load information from np file into dictionary
+    data_dict = np.load(f'{data_directory}/SSVEP_S{subject}.npz')
+    dict = {}
+    dict['eeg'] = data_dict['eeg']
     return data_dict
-    
-
-# Load dictionary
-data = np.load('SSVEP_S1.npz')
-eeg = data['eeg']
-channels = data['channels']
-fs = ...
 
 
 #%% Part 2
