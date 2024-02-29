@@ -31,3 +31,15 @@ def load_ssvep_data(subject, data_directory):
 
 # loop with plt.plot([start_time,end_time],[event_type,event_type]) 
 # plot_raw_data(data, subject, channels_to_plot)
+
+#%% Part 4
+def get_frequency_spectrum(eeg_epochs,fs):
+    '''
+    FUNCTION DESCRIPTION
+    Inputs:
+     - eeg_epochs <array>: [trials, size, time]
+     - fs <float> : sampling frequency (Hz)
+    Outputs:
+     - eeg_epochs_fft <array> : [trials, size, frequency]
+     - fft_frequencies <array> : [frequency for each column in FFT]
+    '''
