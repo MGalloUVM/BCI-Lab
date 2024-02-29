@@ -28,9 +28,9 @@ def load_ssvep_data(subject, data_directory):
     data_dict <dict>
         Dictionary containing the following keys:
         'eeg' <np.ndarray, shape=(a,b)> : float
-            Raw EEG data in uV, ordered by channel.
+            Raw EEG data in Volts, ordered by channel.
             - a : EEG channel index
-            - b : Data sample index (uV)
+            - b : Data sample index
         'channels' <np.ndarray, shape=(a,)> : str
             Channel names, represented in <str> format.
             - a : EEG channel index
@@ -39,6 +39,9 @@ def load_ssvep_data(subject, data_directory):
             The sampling frequency, in Hz, represented as <float> in a 0-dimensional array
         'event_samples' <np.ndarray, shape=(c,)> : int
             The sample index at which each event occurred.
+            - c : Event number/index
+        'event_durations' <np.ndarray, shape=(c,)> : int
+            The duration, in samples, over which the event takes place
             - c : Event number/index
         'event_types' <np.ndarray, shape=(c,)> : str
             The frequency of flickering checkerboard that starts flashing for each event. (Either '12hz' or '15hz' <str>)
@@ -59,7 +62,7 @@ def plot_raw_data(data, subject, channels_to_plot):
     ----------
     (a=num_channels, b=num_samples)
     data <np.ndarray, shape=(a,b)> : float
-        Raw EEG data in uV, ordered by channel.
+        Raw EEG data in Volts, ordered by channel.
         - a : EEG channel index
         - b : Data sample index
     subject <int>
@@ -72,6 +75,7 @@ def plot_raw_data(data, subject, channels_to_plot):
     -------
     None (Plots figures)
     '''
+    # Note that the parameter data comes in as V, so we have to translate to uV
     # loop with plt.plot([start_time,end_time],[event_type,event_type]) 
     # plot_raw_data(data, subject, channels_to_plot)
     pass
@@ -88,9 +92,9 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
     data_dict <dict>
         Dictionary containing the following keys:
         'eeg' <np.ndarray, shape=(a,b)> : float
-            Raw EEG data in uV, ordered by channel.
+            Raw EEG data in Volts, ordered by channel.
             - a : EEG channel index
-            - b : Data sample index (uV)
+            - b : Data sample index
         'channels' <np.ndarray, shape=(a,)> : str
             Channel names, represented in <str> format.
             - a : EEG channel index
@@ -99,6 +103,9 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
             The sampling frequency, in Hz, represented as <float> in a 0-dimensional array
         'event_samples' <np.ndarray, shape=(c,)> : int
             The sample index at which each event occurred.
+            - c : Event number/index
+        'event_durations' <np.ndarray, shape=(c,)> : int
+            The duration, in samples, over which the event takes place
             - c : Event number/index
         'event_types' <np.ndarray, shape=(c,)> : str
             The frequency of flickering checkerboard that starts flashing for each event. (Either '12hz' or '15hz' <str>)
@@ -112,7 +119,7 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
     -------
     (a=num_epochs, b=num_channels, c=num_samples)
     eeg_epochs <np.array, shape=(a, b, c)> : float
-        EEG data in each epoch (in uV).
+        EEG data in each epoch (in Volts).
         a : Epoch index
         b : Channel index
         c : Sample index
@@ -123,12 +130,18 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
         Array of booleans telling whether each trial was/was not a 15Hz trial.
         a : Trial index
     '''
+    num_epochs = len(data_dict['event_samples'])
+    num_channels = len(data_dict['channels'])
+    num_samples_per_epoch = 1000 * (epoch_start_time - epoch_end_time)
+    eeg_epochs = np.zeros((num_epochs, num_channels, num_samples_per_epoch))
 
-    eeg_epochs = np.zeros((1,2))#shape=(num_epochs, num_channels, num_samples_per_epoch))
+    for event_number in range(num_epochs):
+        pass
+
 
     epoch_times = np.zeros((1,2))#shape=(num_samples_per_epoch))
+    # Assign bool value to each epoch/trial depending on 
     is_trial_15Hz = data_dict['event_types'] == '15hz'
-    print(is_trial_15Hz)
 
     return eeg_epochs, epoch_times, is_trial_15Hz
 
