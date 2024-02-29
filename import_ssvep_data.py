@@ -76,3 +76,21 @@ def get_frequency_spectrum(eeg_epochs,fs):
      - fft_frequencies <array> : [frequency for each column in FFT]
     '''
     pass
+
+#%% Part 5
+
+def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels, channels_to_plot, subject):
+    '''
+    DESCRIPTION
+    Inputs:
+     - eeg_epochs_fft <> : DESCRIPTION
+     - fft_frequencies <> : DESCRIPTION
+     - is_trial_15Hz <> : DESCRIPTION
+     - channels <> : DESCRIPTION
+     - channels_to_plot <> : DESCRIPTION
+     - subject <> : DESCRIPTION
+    Outputs:
+     - spectrum_db_12Hz <> : DESCRIPTION
+     - spectrum_db_15Hz <> : DESCRIPTION
+    '''
+    pass
