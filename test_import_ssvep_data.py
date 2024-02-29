@@ -12,6 +12,6 @@ data_directory = './SsvepData'
 
 import_ssvep_data.load_ssvep_data(subject_num, data_directory)
 
-import_ssvep_data.plot_raw_data()
+# import_ssvep_data.plot_raw_data()
 
-import_ssvep_data.epoch_ssvep_data()
+# import_ssvep_data.epoch_ssvep_data()

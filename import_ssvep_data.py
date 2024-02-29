@@ -140,6 +140,7 @@ def get_frequency_spectrum(eeg_epochs,fs):
     fft_frequencies : np.array, shape(frequency for each column in FFT)
         DESCRIPTION
     '''
+    
     pass
 
 #%% Part 5
