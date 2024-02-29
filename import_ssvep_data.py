@@ -69,12 +69,21 @@ def get_frequency_spectrum(eeg_epochs,fs):
     '''
     FUNCTION DESCRIPTION
     Inputs:
-     - eeg_epochs <array>: [trials, size, time]
+     - eeg_epochs[x,y,z] <np.array> : EEG data for each epoch; output of epoch_ssvep_data
+         x[] <> : trials
+         y[] <> : size
+         z[] <> : time
      - fs <float> : sampling frequency (Hz)
     Outputs:
-     - eeg_epochs_fft <array> : [trials, size, frequency]
-     - fft_frequencies <array> : [frequency for each column in FFT]
+     - eeg_epochs_fft[x,y,z] <np.array> : epochs with frequency as final dimension
+         a[] <> : trials
+         b[] <> : size
+         c[] <> : frequency
+     - fft_frequencies[q,w] <np.array> : frequencies with corresponding energies
+         q[] <> : frequency 
+         w[] <> : energy
     '''
+    
     pass
 
 #%% Part 5
