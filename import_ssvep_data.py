@@ -45,7 +45,6 @@ def load_ssvep_data(subject, data_directory):
     # Load information from np file into dictionary
     data = np.load(f'{data_directory}/SSVEP_S{subject}.npz')
     data_dict = {key: data[key] for key in data.files}
-    print(data_dict['event_types'])
     return data_dict
 
 #%% Part 2
@@ -78,7 +77,7 @@ def plot_raw_data(data, subject, channels_to_plot):
 
 def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
     '''
-    FUNCTION DESCRIPTION
+    Divide the SSVEP data into epochs/trials, based on the event indices specified in `data_dict`'s event_samples.
 
     Parameters:
     ----------
@@ -92,6 +91,7 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
             Channel names, represented in <str> format.
             - x : EEG channel index
         'fs' <np.ndarray, shape=()> : int
+            (0-dimensional array)
             The sampling frequency, in Hz, represented as <float> in a 0-dimensional array
         'event_samples' <np.ndarray, shape=(x,)> : int
             The sample index at which each event occurred.
