@@ -43,7 +43,7 @@ def load_ssvep_data(subject, data_directory):
             - x : Event number/index
     '''
     # Load information from np file into dictionary
-    data = np.load(f'{data_directory}/SSVEP_S{subject}.npz')
+    data = np.load(f'{data_directory}/SSVEP_S{subject}.npz', allow_pickle=True)
     data_dict = {key: data[key] for key in data.files}
     return data_dict
 
@@ -77,7 +77,7 @@ def plot_raw_data(data, subject, channels_to_plot):
 
 def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
     '''
-    Divide the SSVEP data into epochs/trials, based on the event indices specified in `data_dict`'s event_samples.
+    Divide the SSVEP data into epochs based on the event indices specified in `data_dict`'s event_samples.
 
     Parameters:
     ----------
@@ -108,17 +108,23 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
     -------
     eeg_epochs <np.array, shape=(x, y, z)> : float
         EEG data in each epoch (in uV).
-        x : Trial/Epoch index
+        x : Epoch index
         y : Channel index
-        z : Time point??
+        z : Sample index
     epoch_times <np.array, shape=(x,)> : float
         The time in seconds (relative to the event) of each time point in eeg_epochs.
-        x : Epoch sample index
+        x : Sample index
     is_trial_15Hz <np.array, shape=(x,)> : boolean
         Array of booleans telling whether each trial was/was not a 15Hz trial.
-        x : Trial/Epoch index
+        x : Trial index
     '''
-    pass
+
+    eeg_epochs = np.zeros((1,2))#shape=(num_epochs, num_channels, num_samples_per_epoch))
+    epoch_times = np.zeros((1,2))#shape=(num_samples_per_epoch))
+    is_trial_15Hz = data_dict['event_types'] == '15hz'
+    print(is_trial_15Hz)
+
+    return eeg_epochs, epoch_times, is_trial_15Hz
 
 #%% Part 4
 
