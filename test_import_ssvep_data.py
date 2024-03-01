@@ -18,3 +18,6 @@ import_ssvep_data.plot_raw_data(data_dict['eeg'], subject_num, data_dict['channe
 
 #%% Part 3
 eeg_epochs, epoch_times, is_trial_15Hz = import_ssvep_data.epoch_ssvep_data(data_dict)
+
+#%% Part 4
+eeg_epochs_fft, fft_frequencies = import_ssvep_data.get_frequency_spectrum(eeg_epochs, data_dict['fs'])

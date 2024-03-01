@@ -15,6 +15,8 @@ def load_ssvep_data(subject, data_directory):
     '''
     Loads EEG data from a specified subject and directory, returning a dictionary with EEG signals, channel names, sampling frequency, event samples, and event types for an SSVEP experiment.
     
+    ##### (CH=num_channels, T=num_time_samples, E=num_events or num_epochs, ET=num_time_samples_in_epoch)
+
     Parameters:
     ----------
     subject <int>
@@ -24,28 +26,27 @@ def load_ssvep_data(subject, data_directory):
 
     Returns:
     -------
-    (a=num_channels, b=num_samples, c=num_events/num_trials)
     data_dict <dict>
         Dictionary containing the following keys:
-        'eeg' <np.ndarray, shape=(a,b)> : float
+        'eeg' <np.ndarray, shape=(CH,T), dtype=float>
             Raw EEG data in Volts, ordered by channel.
-            - a : EEG channel index
-            - b : Data sample index
-        'channels' <np.ndarray, shape=(a,)> : str
-            Channel names, represented in <str> format.
-            - a : EEG channel index
-        'fs' <np.ndarray, shape=()> : int
+            CH : EEG channel index
+            T : Time index (every 1 index = 1ms of time)
+        'channels' <np.ndarray, shape=(CH) dtype=str>
+            Corresponding channel names from dataset.
+            CH : EEG channel index
+        'fs' <np.ndarray, shape=(), dtype=float>
             (0-dimensional array)
             The sampling frequency, in Hz, represented as <float> in a 0-dimensional array
-        'event_samples' <np.ndarray, shape=(c,)> : int
+        'event_samples' <np.ndarray, shape=(E) dtype=int>
             The sample index at which each event occurred.
-            - c : Event number/index
-        'event_durations' <np.ndarray, shape=(c,)> : int
+            E : Event number/index
+        'event_durations' <np.ndarray, shape=(E) dtype=int>
             The duration, in samples, over which the event takes place
-            - c : Event number/index
-        'event_types' <np.ndarray, shape=(c,)> : str
+            E : Event number/index
+        'event_types' <np.ndarray, shape=(E), dtype=str>
             The frequency of flickering checkerboard that starts flashing for each event. (Either '12hz' or '15hz' <str>)
-            - c : Event number/index
+            E : Event number/index
     '''
     # Load information from np file into dictionary
     data = np.load(f'{data_directory}/SSVEP_S{subject}.npz', allow_pickle=True)
@@ -58,18 +59,19 @@ def plot_raw_data(data, subject, channels_to_plot):
     '''
     FUNCTION DESCRIPTION
 
+    ##### (CH=num_channels, ET=num_time_samples_in_epoch)
+
     Parameters:
     ----------
-    (a=num_channels, b=num_samples)
-    data <np.ndarray, shape=(a,b)> : float
+    data <np.ndarray, shape=(CH,ET), dtype=float>
         Raw EEG data in Volts, ordered by channel.
-        - a : EEG channel index
-        - b : Data sample index
+        CH : EEG channel index
+        ET : Time index (every 1 index = 1ms of time)
     subject <int>
-        Subject number, as shown in file title (Ex: SSVEP_S1, 1 is the subject number)
-    channels_to_plot <np.ndarray, shape=(a,)> : <str>
+        Subject number, necessary for plot labels!
+    channels_to_plot <np.ndarray, shape=(CH) dtype=str>
         Channel names to plot in different subplots.
-        - a : EEG channel index
+        CH : EEG channel index
 
     Returns:
     -------
@@ -86,30 +88,31 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
     '''
     Divide the SSVEP data into epochs based on the event indices specified in `data_dict`'s event_samples.
 
+    ##### (CH=num_channels, T=num_time_samples, E=num_events or num_epochs, ET=num_time_samples_in_epoch)
+
     Parameters:
     ----------
-    (a=num_channels, b=num_samples, c=num_events/num_trials)
     data_dict <dict>
         Dictionary containing the following keys:
-        'eeg' <np.ndarray, shape=(a,b)> : float
+        'eeg' <np.ndarray, shape=(CH,T), dtype=float>
             Raw EEG data in Volts, ordered by channel.
-            - a : EEG channel index
-            - b : Data sample index
-        'channels' <np.ndarray, shape=(a,)> : str
+            CH : EEG channel index
+            T : Time index (every 1 index = 1ms of time)
+        'channels' <np.ndarray, shape=(CH) dtype=str>
             Channel names, represented in <str> format.
-            - a : EEG channel index
-        'fs' <np.ndarray, shape=()> : int
+            CH : EEG channel index
+        'fs' <np.ndarray, shape=(), dtype=float>
             (0-dimensional array)
             The sampling frequency, in Hz, represented as <float> in a 0-dimensional array
-        'event_samples' <np.ndarray, shape=(c,)> : int
+        'event_samples' <np.ndarray, shape=(E) dtype=int>
             The sample index at which each event occurred.
-            - c : Event number/index
-        'event_durations' <np.ndarray, shape=(c,)> : int
+            E : Event number/index
+        'event_durations' <np.ndarray, shape=(E) dtype=int>
             The duration, in samples, over which the event takes place
-            - c : Event number/index
-        'event_types' <np.ndarray, shape=(c,)> : str
+            E : Event number/index
+        'event_types' <np.ndarray, shape=(E), dtype=str>
             The frequency of flickering checkerboard that starts flashing for each event. (Either '12hz' or '15hz' <str>)
-            - c : Event number/index
+            E : Event number/index
     epoch_start_time <float>
         Desired start time of epoch relative to the event, in seconds.
     epoch_end_time <float>
@@ -117,18 +120,17 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
 
     Returns:
     -------
-    (a=num_epochs, b=num_channels, c=num_samples)
-    eeg_epochs <np.array, shape=(a, b, c)> : float
+    eeg_epochs <np.array, shape=(E, CH, ET), dtype=float>
         EEG data in each epoch (in uV).
-        a : Epoch index
-        b : Channel index
-        c : Sample index
-    epoch_times <np.array, shape=(c,)> : float
+        E : Epoch index
+        CH : Channel index
+        ET : Time index in epoch (every 1 index = 1ms of time)
+    epoch_times <np.array, shape=(ET), dtype=float>
         The time in seconds (relative to the event) of each time point in eeg_epochs.
-        c : Sample index
-    is_trial_15Hz <np.array, shape=(a,)> : boolean
+        ET : Time index in epoch
+    is_trial_15Hz <np.array, shape=(E), dtype=boolean>
         Array of booleans telling whether each trial was/was not a 15Hz trial.
-        a : Trial index
+        E : Epoch index
     '''
     event_samples = data_dict['event_samples']
     event_durations = data_dict['event_durations']
@@ -159,7 +161,7 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
     # Set the epoch time range
     epoch_times = np.arange(max_samples_per_epoch) * time_between_samples
 
-    # Assign bool value to each epoch/trial depending on 
+    # Assign bool value to each epoch/trial depending on the flashing target's hz value
     is_trial_15Hz = data_dict['event_types'] == '15hz'
 
     return eeg_epochs, epoch_times, is_trial_15Hz
@@ -168,32 +170,44 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
 
 def get_frequency_spectrum(eeg_epochs,fs):
     '''
-    FUNCTION DESCRIPTION
+    Compute and return the Fast Fourier Transform for each epoch and channel in the EEG data to convert 
+    the signal from the time domain to the frequency domain. 
+
+    ##### (E=num_epochs, CH=num_channels, ET=num_time_samples_in_epoch, FFT=num_frequency_bins[ET//2+1])
 
     Parameters:
     ----------
-    (a=num_epochs, b=num_channels, c=num_samples)
-    eeg_epochs <np.array, shape(a, b, c)>
+    eeg_epochs <np.array, shape(E, CH, ET), dtype=float>
         EEG data in each epoch (in uV).
-        a : Epoch index
-        b : Channel index
-        c : Sample index
+        E : Epoch index
+        CH : Channel index
+        ET : Time index in epoch (every 1 index = 1ms of time)
     fs : float
         Sampling frequency (Hz)
     
     Returns:
     -------
-    (a=num_epochs, b=num_channels, c=frequency??)
-    eeg_epochs_fft <np.array, shape=(a, b, c)>
-        DESCRIPTION
-        a : Epoch index
-        b : Channel index
-        c : frequency
-    fft_frequencies <np.array, shape=c?>
-        DESCRIPTION
-        c : frequency
+    eeg_epochs_fft <np.array, shape=(E, CH, FFT), dtype=complex>
+        The FFT for each epoch and channel, providing the frequency domain representation of the EEG signal.
+        E : Epoch index
+        CH : Channel index
+        FFT : Frequency index (the number of unique frequency components)
+    fft_frequencies <np.array, shape=(FFT), dtype=float>
+        The array of frequency bins corresponding to the FFT output, indicating the frequencies represented in eeg_epochs_fft.
+        FFT : Frequency index (the number of unique frequency components)
     '''
-    pass
+    # Get number of epochs, channels, and samples through eeg_epochs's shape
+    num_epochs, num_channels, num_samples = eeg_epochs.shape
+    # Initialize array for holding frequency, as result will be symmetric we divide num_samples
+    eeg_epochs_fft = np.zeros((num_epochs, num_channels, num_samples // 2 + 1), dtype=complex)
+
+    # Apply real fast fourier transform across the samples axis in all epochs/channels
+    eeg_epochs_fft = np.fft.rfft(eeg_epochs, axis=2)
+
+    # Calculate the frequencies corresponding to the FFT output
+    fft_frequencies = np.fft.rfftfreq(num_samples, d=1.0/fs)
+
+    return eeg_epochs_fft, fft_frequencies
 
 #%% Part 5
 
@@ -201,26 +215,35 @@ def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels
     '''
     This function calculates the mean power spectra for the specified channels, each in their own subplot.
 
+    ##### (E=num_epochs, CH=num_channels, FFT=num_frequency_bins[ET//2+1])
+
     Parameters:
     ----------
-    eeg_epochs_fft <TYPE/SHAPE> : NESTED_VAL_TYPE
-        DESCRIPTION
-    fft_frequencies <TYPE/SHAPE> : NESTED_VAL_TYPE
-        DESCRIPTION
-    is_trial_15Hz <TYPE/SHAPE> : NESTED_VAL_TYPE
-        DESCRIPTION
-    channels <TYPE/SHAPE> : NESTED_VAL_TYPE
-        DESCRIPTION
-    channels_to_plot <TYPE/SHAPE> : NESTED_VAL_TYPE
-        DESCRIPTION
-    subject <TYPE/SHAPE> : NESTED_VAL_TYPE
-        DESCRIPTION
+    eeg_epochs_fft <np.array, shape=(E, CH, FFT), dtype=complex>
+        The FFT for each epoch and channel, providing the frequency domain representation of the EEG signal.
+        E : Epoch index
+        CH : Channel index
+        FFT : Frequency index (the number of unique frequency components)
+    fft_frequencies <np.array, shape=(FFT), dtype=float>
+        The array of frequency bins corresponding to the FFT output, indicating the frequencies represented in eeg_epochs_fft.
+        FFT : Frequency index (the number of unique frequency components)
+    is_trial_15Hz <np.array, shape=(E), dtype=boolean>
+        Array of booleans telling whether each trial was/was not a 15Hz trial.
+        E : Epoch index
+    channels <np.ndarray, shape=(CH) dtype=str>
+        Channel names from dataset.
+        CH : EEG channel index
+    channels_to_plot <np.ndarray, shape=(CH) dtype=str>
+        Corresponding channel names to plot in different subplots.
+        CH : EEG channel index
+    subject <int>
+        Subject number, necessary for plot labels!
     
     Returns:
     -------
-    spectrum_db_12Hz <TYPE/SHAPE> : NESTED_VAL_TYPE
+    spectrum_db_12Hz <>
         DESCRIPTION
-    spectrum_db_15Hz <TYPE/SHAPE> : NESTED_VAL_TYPE
+    spectrum_db_15Hz <>
         DESCRIPTION
     '''
     pass
