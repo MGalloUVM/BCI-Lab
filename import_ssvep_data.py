@@ -119,7 +119,7 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
     -------
     (a=num_epochs, b=num_channels, c=num_samples)
     eeg_epochs <np.array, shape=(a, b, c)> : float
-        EEG data in each epoch (in Volts).
+        EEG data in each epoch (in uV).
         a : Epoch index
         b : Channel index
         c : Sample index
@@ -130,16 +130,35 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
         Array of booleans telling whether each trial was/was not a 15Hz trial.
         a : Trial index
     '''
-    num_epochs = len(data_dict['event_samples'])
+    event_samples = data_dict['event_samples']
+    event_durations = data_dict['event_durations']
+    
+    num_epochs = len(event_samples)
     num_channels = len(data_dict['channels'])
-    num_samples_per_epoch = 1000 * (epoch_start_time - epoch_end_time)
-    eeg_epochs = np.zeros((num_epochs, num_channels, num_samples_per_epoch))
+    # Because array will be of fixed size, get the max duration
+    max_samples_per_epoch = int(np.max(event_durations))
+    # Create eeg_epochs array, fill temporarily with placeholder np.nan values
+    eeg_epochs = np.full((num_epochs, num_channels, max_samples_per_epoch), np.nan)
 
+    # Fill out data
     for event_number in range(num_epochs):
-        pass
+        # Calculate start+end indices of event block
+        event_start_index = int(event_samples[event_number])
+        event_end_index = int(event_start_index + event_durations[event_number])
+        # Extract data within epoch sample bounds
+        epoch_data_V = data_dict['eeg'][:, event_start_index:event_end_index]
+        # Convert from V to uV
+        epoch_data_uV = epoch_data_V * 1e6
+        eeg_epochs[event_number] = epoch_data_uV
 
+    # Fill out epoch_times
+    epoch_times = np.zeros((max_samples_per_epoch))
+    epoch_time_duration = epoch_end_time - epoch_start_time
+    # Get the amount of time between each sample based on the frequency
+    time_between_samples = epoch_time_duration * data_dict['fs'] / max_samples_per_epoch
+    # Set the epoch time range
+    epoch_times = np.arange(max_samples_per_epoch) * time_between_samples
 
-    epoch_times = np.zeros((1,2))#shape=(num_samples_per_epoch))
     # Assign bool value to each epoch/trial depending on 
     is_trial_15Hz = data_dict['event_types'] == '15hz'
 
@@ -155,7 +174,7 @@ def get_frequency_spectrum(eeg_epochs,fs):
     ----------
     (a=num_epochs, b=num_channels, c=num_samples)
     eeg_epochs <np.array, shape(a, b, c)>
-        DESCRIPTION
+        EEG data in each epoch (in uV).
         a : Epoch index
         b : Channel index
         c : Sample index
