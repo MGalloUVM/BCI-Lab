@@ -14,7 +14,7 @@ data_directory = './SsvepData'
 data_dict = import_ssvep_data.load_ssvep_data(subject_num, data_directory)
 
 #%% Part 2
-import_ssvep_data.plot_raw_data(data_dict['eeg'], subject_num, data_dict['channels'])
+import_ssvep_data.plot_raw_data(data_dict, subject_num, channels_to_plot=['Fz','Oz'])
 
 #%% Part 3
 eeg_epochs, epoch_times, is_trial_15Hz = import_ssvep_data.epoch_ssvep_data(data_dict)
