@@ -54,18 +54,34 @@ def load_ssvep_data(subject, data_directory):
 
 #%% Part 2
 
-def plot_raw_data(data, subject, channels_to_plot):
+def plot_raw_data(data_dict, subject, channels_to_plot):
     '''
-    FUNCTION DESCRIPTION
+    Plots the raw EEG data to determine its quality and see timing of events.
 
     Parameters:
     ----------
-    (a=num_channels, b=num_samples)
-    data <np.ndarray, shape=(a,b)> : float
-        Raw EEG data in Volts, ordered by channel.
-        - a : EEG channel index
-        - b : Data sample index
-    subject <int>
+    data_dict <dict>
+        Dictionary containing the following keys:
+        'eeg' <np.ndarray, shape=(a,b)> : float
+            Raw EEG data in Volts, ordered by channel.
+            - a : EEG channel index
+            - b : Data sample index
+        'channels' <np.ndarray, shape=(a,)> : str
+            Channel names, represented in <str> format.
+            - a : EEG channel index
+        'fs' <np.ndarray, shape=()> : int
+            (0-dimensional array)
+            The sampling frequency, in Hz, represented as <float> in a 0-dimensional array
+        'event_samples' <np.ndarray, shape=(c,)> : int
+            The sample index at which each event occurred.
+            - c : Event number/index
+        'event_durations' <np.ndarray, shape=(c,)> : int
+            The duration, in samples, over which the event takes place
+            - c : Event number/index
+        'event_types' <np.ndarray, shape=(c,)> : str
+            The frequency of flickering checkerboard that starts flashing for each event. (Either '12hz' or '15hz' <str>)
+            - c : Event number/index
+   subject <int>
         Subject number, as shown in file title (Ex: SSVEP_S1, 1 is the subject number)
     channels_to_plot <np.ndarray, shape=(a,)> : <str>
         Channel names to plot in different subplots.
@@ -75,9 +91,41 @@ def plot_raw_data(data, subject, channels_to_plot):
     -------
     None (Plots figures)
     '''
-    # Note that the parameter data comes in as V, so we have to translate to uV
-    # loop with plt.plot([start_time,end_time],[event_type,event_type]) 
-    # plot_raw_data(data, subject, channels_to_plot)
+    # Extract data
+    eeg_data = data_dict['eeg'] * 1e6 # Converts V to uV
+    fs = data_dict['fs']
+    event_samples = data_dict['event_samples']
+    event_durations = data_dict['event_durations']
+    event_types = data_dict['event_types']
+    channels = data_dict['channels']
+    
+    # Convert time to seconds for legend
+    t_seconds = np.arange(len(eeg_data[0]))/fs
+    
+    # Create figure and subplots
+    fig, axs = plt.subplots(2, 1, figsize=(9, 11), sharex=True)
+    
+    # Plot event start and end times and types
+    for sample, duration, event_type in zip(event_samples, event_durations, event_types):
+        start_time = sample / fs
+        end_time = (sample + duration) / fs
+        axs[0].plot(start_time, event_type, 'bo')  # Dot at the start time
+        axs[0].plot(end_time, event_type, 'bo')    # Dot at the end time
+        axs[0].plot([start_time, end_time], [event_type, event_type], color='b', linewidth=2) # Line between start/end
+    axs[0].set_title(f'SSVEP Subject {subject} Raw Data')
+    axs[0].set_xlabel('Time (s)')
+    axs[0].set_ylabel('Flash Frequency')
+    axs[0].grid()
+    
+    # Plot raw data from specified channels
+    for channel_name in channels_to_plot:
+        channel_index = np.where(channels == channel_name)[0][0]
+        axs[1].plot(t_seconds, eeg_data[channel_index], label=channel_name)
+    axs[1].set_xlabel('Time (s)')
+    axs[1].set_ylabel('Voltage (uV)')
+    axs[1].grid()
+    axs[1].legend()
+    
     pass
 
 #%% Part 3
