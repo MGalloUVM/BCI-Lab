@@ -111,7 +111,9 @@ def plot_raw_data(data_dict, subject, channels_to_plot):
     axs[1].set_ylabel('Voltage (uV)')
     axs[1].grid()
     axs[1].legend()
-    
+
+    plt.savefig(f'SSVEP_S{subject}_rawdata.png')
+
     pass
 
 #%% Part 3
@@ -243,7 +245,7 @@ def get_frequency_spectrum(eeg_epochs,fs):
 
 #%% Part 5
 
-def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels, channels_to_plot, subject):
+def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels, subject, channels_to_plot):
     '''
     This function calculates the mean power spectra for the specified channels, each in their own subplot.
 
@@ -278,4 +280,60 @@ def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels
     spectrum_db_15Hz <>
         DESCRIPTION
     '''
-    pass
+    # Create empty subplots
+    fig, axes = plt.subplots(len(channels_to_plot), 1, figsize=(9, 10))
+    
+    # Create empty dictionaries for power spectra
+    spectrum_db_12Hz = {}
+    spectrum_db_15Hz = {}
+
+    # Iterate over channels to plot
+    for i, channel in enumerate(channels_to_plot):
+        ax = axes[i] if len(channels_to_plot) > 1 else axes # Prevents error when only one channel
+        channel_index = np.where(channels == channel)[0][0] # Find the index of the channel
+
+        # Extract FFT data for the selected channel
+        fft_data = eeg_epochs_fft[:, channel_index, :]
+
+        # Separate 12Hz and 15Hz trials
+        fft_12Hz_trials = fft_data[~is_trial_15Hz] # Since there are only two frequencies, all non-15Hz trials are 12Hz
+        fft_15Hz_trials = fft_data[is_trial_15Hz]
+
+        # Calc absolute value of spectra
+        fft_12Hz_trials = np.abs(fft_12Hz_trials)
+        fft_15Hz_trials = np.abs(fft_15Hz_trials)
+        
+        # Square spectra (multiply by complex conjugate) 
+        fft_12Hz_trials **= 2
+        fft_15Hz_trials **= 2
+
+        # Take average of spectra
+        power_12Hz = np.mean(fft_12Hz_trials, axis=0)
+        power_15Hz = np.mean(fft_15Hz_trials, axis=0)
+
+        # Divide spectra by max value (normalize)
+        power_12Hz /= np.max(power_12Hz)
+        power_15Hz /= np.max(power_15Hz)
+        
+        # Convert to decibel units
+        power_db_12Hz = 10 * np.log10(power_12Hz)
+        power_db_15Hz = 10 * np.log10(power_15Hz)
+
+        # Populate plots and set labels
+        ax.plot(fft_frequencies, power_db_12Hz, label='12Hz Trials', color='red')
+        ax.plot(fft_frequencies, power_db_15Hz, label='15Hz Trials', color='green')
+        ax.set_title(f'Channel {channel} frequency content\nfor SSVEP S{subject}')
+        ax.set_xlabel('Frequency (Hz)')
+        ax.set_ylabel('Power (dB)')
+        ax.legend()
+        ax.grid(True)
+
+        # Add vertical lines at stimulation frequencies
+        ax.axvline(x=12, color='r', linestyle='--')
+        ax.axvline(x=15, color='g', linestyle='--')
+
+        # Store power spectra for each channel
+        spectrum_db_12Hz[channel] = power_db_12Hz
+        spectrum_db_15Hz[channel] = power_db_15Hz
+    
+    return spectrum_db_12Hz, spectrum_db_15Hz
