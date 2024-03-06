@@ -114,8 +114,6 @@ def plot_raw_data(data_dict, subject, channels_to_plot):
 
     plt.savefig(f'SSVEP_S{subject}_rawdata.png')
 
-    pass
-
 #%% Part 3
 
 def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
