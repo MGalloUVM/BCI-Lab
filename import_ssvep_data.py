@@ -89,7 +89,7 @@ def plot_raw_data(data_dict, subject, channels_to_plot):
     t_seconds = np.arange(len(eeg_data[0]))/fs
     
     # Create figure and subplots
-    fig, axs = plt.subplots(2, 1, figsize=(9, 11), sharex=True)
+    fig, axs = plt.subplots(2, 1, figsize=(9, 10), sharex=True)
     
     # Plot event start and end times and types
     for sample, duration, event_type in zip(event_samples, event_durations, event_types):
@@ -334,5 +334,7 @@ def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels
         # Store power spectra for each channel
         spectrum_db_12Hz[channel] = power_db_12Hz
         spectrum_db_15Hz[channel] = power_db_15Hz
+
+        plt.tight_layout()
     
     return spectrum_db_12Hz, spectrum_db_15Hz
