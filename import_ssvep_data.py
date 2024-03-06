@@ -114,6 +114,7 @@ def plot_raw_data(data_dict, subject, channels_to_plot):
 
     plt.tight_layout()
     plt.savefig(f'SSVEP_S{subject}_rawdata.png')
+    plt.show()
 
 #%% Part 3
 
@@ -336,5 +337,6 @@ def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels
         spectrum_db_15Hz[channel] = power_db_15Hz
 
         plt.tight_layout()
+        plt.show()
     
     return spectrum_db_12Hz, spectrum_db_15Hz
