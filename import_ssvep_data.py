@@ -112,6 +112,7 @@ def plot_raw_data(data_dict, subject, channels_to_plot):
     axs[1].grid()
     axs[1].legend()
 
+    plt.tight_layout()
     plt.savefig(f'SSVEP_S{subject}_rawdata.png')
 
 #%% Part 3
