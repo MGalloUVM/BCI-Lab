@@ -280,17 +280,24 @@ def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels
     spectrum_db_15Hz <>
         DESCRIPTION
     '''
-    # Create empty subplots
-    fig, axes = plt.subplots(len(channels_to_plot), 1, figsize=(9, 10))
-    
+    # Determine the layout of the subplots
+    num_channels = len(channels_to_plot)
+    num_cols = 2 if num_channels > 2 else 1
+    num_rows = num_channels if num_cols == 1 else (num_channels // 2 + num_channels % 2)
+
+    # Create the subplots
+    fig, axes = plt.subplots(num_rows, num_cols, figsize=(10, 5 * num_rows), squeeze=False)
+
     # Create empty dictionaries for power spectra
     spectrum_db_12Hz = {}
     spectrum_db_15Hz = {}
 
     # Iterate over channels to plot
     for i, channel in enumerate(channels_to_plot):
-        ax = axes[i] if len(channels_to_plot) > 1 else axes # Prevents error when only one channel
-        channel_index = np.where(channels == channel)[0][0] # Find the index of the channel
+        row, col = divmod(i, num_cols)  # Determine the row and column indices
+        ax = axes[row, col]  # Access the subplot for the current channel
+        
+        channel_index = np.where(channels == channel)[0][0]  # Find the index of the channel
 
         # Extract FFT data for the selected channel
         fft_data = eeg_epochs_fft[:, channel_index, :]
@@ -332,11 +339,18 @@ def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels
         ax.axvline(x=12, color='r', linestyle='--')
         ax.axvline(x=15, color='g', linestyle='--')
 
+        ax.set_xlim(0, 60)
+
         # Store power spectra for each channel
         spectrum_db_12Hz[channel] = power_db_12Hz
         spectrum_db_15Hz[channel] = power_db_15Hz
 
-        plt.tight_layout()
-        plt.show()
+    # If there's an unused subplot, turn it off
+    if num_channels % 2 == 1 and num_cols > 1:
+        axes[-1, -1].axis('off')
+
+    plt.tight_layout()
+    plt.savefig(f'SSVEP_S{subject}_power_spectrum.png')
+    plt.show()
     
     return spectrum_db_12Hz, spectrum_db_15Hz
