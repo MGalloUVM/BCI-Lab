@@ -21,3 +21,9 @@ eeg_epochs, epoch_times, is_trial_15Hz = import_ssvep_data.epoch_ssvep_data(data
 
 #%% Part 4
 eeg_epochs_fft, fft_frequencies = import_ssvep_data.get_frequency_spectrum(eeg_epochs, data_dict['fs'])
+
+#%% Part 5
+import_ssvep_data.plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, data_dict['channels'], subject_num, channels_to_plot=['Fz','Oz'])
+
+
+
