@@ -265,7 +265,7 @@ def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels
     '''
     This function calculates the mean power spectra for the specified channels, each in their own subplot.
 
-    ##### (E=num_epochs, CH=num_channels, FFT=num_frequency_bins[ET//2+1])
+    ##### (E=num_epochs, CH=num_channels, FFT=num_frequency_bins[ET//2+1], MPS=Mean Power spectrum (dB) )
 
     Parameters:
     ----------
