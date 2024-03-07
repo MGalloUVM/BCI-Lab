@@ -26,7 +26,6 @@ ChatGPT - used for improving grammar and descriptions.
 
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.fft
 
 def load_ssvep_data(subject, data_directory):
     '''
@@ -292,10 +291,14 @@ def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels
     
     Returns:
     -------
-    spectrum_db_12Hz <>
-        DESCRIPTION
-    spectrum_db_15Hz <>
-        DESCRIPTION
+    spectrum_db_12Hz <np.array, shape=(CH, MPS), dtype=complex>
+         the mean power spectrum of 12Hz trials in dB keyed to channels
+         CH : Channel index key
+         MPS : mean power spectrum (dB) for 12Hz trial for associated channel
+    spectrum_db_15Hz <np.array, shape=(CH, MPS), dtype=complex>
+         the mean power spectrum of 15Hz trials in dB keyed to channels
+         CH : Channel index key
+         MPS : mean power spectrum (dB) for 15Hz trial for associated channel
     '''
     # Determine the layout of the subplots
     num_channels = len(channels_to_plot)
