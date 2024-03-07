@@ -2,7 +2,24 @@
 """
 Created on Thu Feb 22 11:14:55 2024
 
-@authors: Michael Gallo, Tynan Gacy
+FileName
+----------
+import_ssvep_data.py
+
+Description
+-------------
+This script is designed to load, process, analyze, and visualize EEG data 
+from SSVEP experiments. It includes functions for data loading, plotting 
+raw EEG data, epoching, frequency spectrum analysis, and power spectrum 
+visualization, aiding in understanding the neural responses to SSVEP stimuli.
+
+Authors
+---------
+Michael Gallo, Tynan Gacy
+
+Collaborators & Sources
+-------------------------
+ChatGPT - used for improving grammar and descriptions.
 """
 
 #%% Part 1
