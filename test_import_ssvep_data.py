@@ -24,7 +24,7 @@ ChatGPT - used for improving grammar and descriptions.
 #%% Part 0 - Setup
 import import_ssvep_data
 
-subject_num = 2
+subject_num = 1
 data_directory = './SsvepData'
 
 #%% Part 1 - Load information
